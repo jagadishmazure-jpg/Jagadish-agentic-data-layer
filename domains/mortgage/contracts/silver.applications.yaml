@@ -1,53 +1,42 @@
-# Data contract (PLANNED, nothing built yet): mortgage.silver.applications for the fictional Quillmere Home Loans. Validated by adl.core.contracts in CI.
+# Data contract: mortgage.silver.applications (owner: lending-data). Validated by adl.core.contracts in CI.
 id: mortgage.silver.applications
-version: 0.1.0
+version: 1.0.0
 domain: mortgage
 layer: silver
 table: applications
 kind: conformed
-status: planned
-description: Loan applications with stage dates, product, rate lock and broker channel.
-owner:
-  team: lending-data
-  steward: Lending data steward
-  contact: lending-data@quillmere.example
+status: built
+description: Loan applications from the origination system with the applicant's contact details; restricted, never exposed to agents. Sandbox test records are quarantined.
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
 classification: restricted
 schema:
-- name: application_id
-  type: string
-  nullable: false
-- name: applicant_name
-  type: string
-  nullable: false
-  pii: true
-- name: product
-  type: string
-  nullable: false
-- name: channel
-  type: string
-  nullable: false
-- name: stage
-  type: string
-  nullable: false
-- name: rate_lock_day
-  type: int
-  nullable: true
-- name: lock_expiry_day
-  type: int
-  nullable: true
-- name: loan_amount_usd
-  type: float
-  nullable: false
-- name: ltv_pct
-  type: float
-  nullable: false
-primary_key: &id001
-- application_id
+- {name: application_id, type: string, nullable: false}
+- {name: applicant_name, type: string, nullable: false, pii: true}
+- {name: email, type: string, nullable: false, pii: true}
+- {name: phone, type: string, nullable: false, pii: true}
+- {name: branch_id, type: string, nullable: false}
+- {name: lo_id, type: string, nullable: false}
+- {name: product, type: string, nullable: false}
+- {name: channel, type: string, nullable: false}
+- {name: purpose, type: string, nullable: false}
+- {name: loan_amount_usd, type: float, nullable: false}
+- {name: ltv_pct, type: float, nullable: false}
+- {name: application_day, type: int, nullable: false}
+- {name: lock_term_days, type: int, nullable: false}
+primary_key: [application_id]
 quality:
 - check: unique
-  columns: *id001
-slo:
-  completeness_pct: 99.5
-  freshness_days: 1
-inputs:
-- mortgage.bronze.applications
+  columns: [application_id]
+- {check: regex, column: application_id, pattern: 'APP-\d{5}'}
+- {check: range, column: loan_amount_usd, min: 25000, max: 5000000}
+- {check: range, column: ltv_pct, min: 5, max: 105}
+- {check: accepted_values, column: product, values: [conv30, conv15, fha, va, jumbo]}
+- {check: accepted_values, column: channel, values: [retail, broker, direct]}
+- {check: accepted_values, column: purpose, values: [purchase, refinance]}
+- {check: accepted_values, column: lock_term_days, values: ['30', '45', '60']}
+- {check: referential, column: branch_id, ref: mortgage.silver.branches.branch_id}
+- {check: referential, column: lo_id, ref: mortgage.silver.loan_officers.lo_id}
+- {check: row_count_min, value: 3000}
+slo: {completeness_pct: 99.5, freshness_days: 1, max_quarantine_pct: 1.0}
+inputs: [mortgage.bronze.los_applications]
+agent_exposed: false

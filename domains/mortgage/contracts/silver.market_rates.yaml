@@ -1,0 +1,22 @@
+# Data contract: mortgage.silver.market_rates (owner: capital-markets-data). Validated by adl.core.contracts in CI.
+id: mortgage.silver.market_rates
+version: 1.0.0
+domain: mortgage
+layer: silver
+table: market_rates
+kind: conformed
+status: built
+description: Daily 30-year market mortgage rate from the market-data feed (synthetic).
+owner: {team: capital-markets-data, steward: Lock desk data steward, contact: lock-desk-data@quillmere.example}
+classification: internal
+schema:
+- {name: day, type: int, nullable: false}
+- {name: rate_30y_pct, type: float, nullable: false}
+primary_key: [day]
+quality:
+- check: unique
+  columns: [day]
+- {check: range, column: rate_30y_pct, min: 2, max: 12}
+- {check: freshness, column: day}
+slo: {completeness_pct: 100, freshness_days: 1}
+inputs: [mortgage.bronze.market_rates]

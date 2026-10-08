@@ -1,0 +1,25 @@
+# Data contract: mortgage.silver.conditions (owner: lending-data). Validated by adl.core.contracts in CI.
+id: mortgage.silver.conditions
+version: 1.0.0
+domain: mortgage
+layer: silver
+table: conditions
+kind: conformed
+status: built
+description: Document conditions per application with the day each was opened and cleared (null while outstanding).
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
+classification: confidential
+schema:
+- {name: condition_id, type: string, nullable: false}
+- {name: application_id, type: string, nullable: false}
+- {name: condition_type, type: string, nullable: false}
+- {name: opened_day, type: int, nullable: false}
+- {name: cleared_day, type: int, nullable: true}
+primary_key: [condition_id]
+quality:
+- check: unique
+  columns: [condition_id]
+- {check: accepted_values, column: condition_type, values: [income, assets, employment, appraisal, insurance, title, explanation_letter]}
+- {check: referential, column: application_id, ref: mortgage.silver.applications.application_id}
+slo: {completeness_pct: 99.5, freshness_days: 1, max_quarantine_pct: 1.0}
+inputs: [mortgage.bronze.conditions, mortgage.silver.applications]

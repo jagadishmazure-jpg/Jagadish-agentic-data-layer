@@ -1,0 +1,22 @@
+# Data contract: mortgage.silver.products (owner: lending-data). Validated by adl.core.contracts in CI.
+id: mortgage.silver.products
+version: 1.0.0
+domain: mortgage
+layer: silver
+table: products
+kind: conformed
+status: built
+description: Loan products with the expected gain on sale and the rate spread over the market rate.
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
+classification: internal
+schema:
+- {name: product, type: string, nullable: false}
+- {name: gain_on_sale_pct, type: float, nullable: false}
+- {name: rate_spread_pct, type: float, nullable: false}
+primary_key: [product]
+quality:
+- check: unique
+  columns: [product]
+- {check: range, column: gain_on_sale_pct, min: 0, max: 5}
+slo: {completeness_pct: 100, freshness_days: 365}
+inputs: [mortgage.bronze.products]

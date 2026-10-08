@@ -1,0 +1,33 @@
+# Data contract: mortgage.gold.pipeline_notes (owner: lending-data). Validated by adl.core.contracts in CI.
+id: mortgage.gold.pipeline_notes
+version: 1.0.0
+domain: mortgage
+layer: gold
+table: pipeline_notes
+kind: data_product
+status: built
+description: Redacted pipeline notes with branch and region; returned to agents quoted as untrusted data.
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
+classification: internal
+schema:
+- {name: note_id, type: string, nullable: false}
+- {name: application_id, type: string, nullable: false}
+- {name: branch_id, type: string, nullable: false}
+- {name: region, type: string, nullable: false}
+- {name: lo_id, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: author_role, type: string, nullable: false}
+- {name: text_redacted, type: string, nullable: false}
+- {name: injection_flag, type: bool, nullable: false}
+primary_key: [note_id]
+quality:
+- check: unique
+  columns: [note_id]
+slo: {completeness_pct: 100, freshness_days: 7}
+acceptable_use:
+  allowed_purposes: [pipeline_management, branch_operations]
+  prohibited_purposes: [credit_decisioning, pricing_by_protected_characteristic, sale_of_data_to_third_parties]
+consumers: [agent:mortgage-assistant, agent:branch-copilot-north, agent:branch-copilot-south]
+inputs: [mortgage.silver.pipeline_notes, mortgage.silver.loan_officers, mortgage.silver.branches]
+agent_exposed: true
+text_fields: [text_redacted]

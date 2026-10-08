@@ -1,60 +1,40 @@
-# Data contract (PLANNED, nothing built yet): mortgage.gold.pipeline_daily for the fictional Quillmere Home Loans. Validated by adl.core.contracts in CI.
+# Data contract: mortgage.gold.pipeline_daily (owner: lending-data). Validated by adl.core.contracts in CI.
 id: mortgage.gold.pipeline_daily
-version: 0.1.0
+version: 1.0.0
 domain: mortgage
 layer: gold
 table: pipeline_daily
 kind: data_product
-status: planned
-description: Applications per stage, product and channel per day with pull-through and cycle time.
-owner:
-  team: lending-data
-  steward: Lending data steward
-  contact: lending-data@quillmere.example
+status: built
+description: Locked pipeline per day, region, product and channel - new locks, closings, fallout by reason, extensions and their cost - the source of the pipeline KPIs.
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
 classification: internal
 schema:
-- name: day
-  type: int
-  nullable: false
-- name: product
-  type: string
-  nullable: false
-- name: channel
-  type: string
-  nullable: false
-- name: stage
-  type: string
-  nullable: false
-- name: applications
-  type: int
-  nullable: false
-- name: pull_through_pct
-  type: float
-  nullable: false
-- name: median_days_in_stage
-  type: float
-  nullable: false
-primary_key: &id001
-- day
-- product
-- channel
-- stage
+- {name: day, type: int, nullable: false}
+- {name: region, type: string, nullable: false}
+- {name: product, type: string, nullable: false}
+- {name: channel, type: string, nullable: false}
+- {name: new_locks, type: int, nullable: false}
+- {name: closed, type: int, nullable: false}
+- {name: withdrawn, type: int, nullable: false}
+- {name: expired, type: int, nullable: false}
+- {name: denied, type: int, nullable: false}
+- {name: fallout, type: int, nullable: false}
+- {name: extensions, type: int, nullable: false}
+- {name: extension_cost_usd, type: float, nullable: false}
+- {name: lock_to_close_days, type: int, nullable: false, description: Sum over loans closed that day}
+- {name: gain_on_sale_usd, type: float, nullable: false}
+primary_key: [day, region, product, channel]
 quality:
 - check: unique
-  columns: *id001
-slo:
-  completeness_pct: 99.5
-  freshness_days: 1
+  columns: [day, region, product, channel]
+- {check: range, column: closed, min: 0}
+- {check: range, column: extension_cost_usd, min: 0}
+- {check: freshness, column: day}
+slo: {completeness_pct: 100, freshness_days: 1}
 acceptable_use:
-  allowed_purposes:
-  - pipeline_management
-  - capacity_planning
-  prohibited_purposes:
-  - credit_decisioning
-  - pricing_by_protected_characteristic
-  - sale_of_data_to_third_parties
-consumers:
-- agent:mortgage-assistant
-inputs:
-- mortgage.silver.applications
+  allowed_purposes: [pipeline_management, capacity_planning, performance_reporting, branch_operations]
+  prohibited_purposes: [credit_decisioning, pricing_by_protected_characteristic, sale_of_data_to_third_parties]
+consumers: [agent:mortgage-assistant, agent:branch-copilot-north, agent:branch-copilot-south, agent:mortgage-finance]
+inputs: [mortgage.silver.applications, mortgage.silver.stage_events, mortgage.silver.rate_locks, mortgage.silver.branches, mortgage.silver.products]
 agent_exposed: true

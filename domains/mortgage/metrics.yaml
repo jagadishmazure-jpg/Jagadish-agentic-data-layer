@@ -1,0 +1,60 @@
+# Semantic layer for the mortgage domain: every pipeline KPI is defined once, here, and compiled to SQL by
+# adl.core.semantic. The value case, agents (through the gateway) and the docs all use these definitions.
+source: gold.pipeline_daily
+dimensions:
+  day: day
+  week: "day // 7"
+  region: region
+  product: product
+  channel: channel
+metrics:
+  new_locks:
+    sql: sum(new_locks)
+    description: Rate locks taken.
+    unit: loans
+    owner: lending-data
+  closed_loans:
+    sql: sum(closed)
+    description: Locked loans that closed.
+    unit: loans
+    owner: lending-data
+  fallout_loans:
+    sql: sum(fallout)
+    description: Locked loans that fell out (withdrawn, expired or declined).
+    unit: loans
+    owner: lending-data
+  pull_through_pct:
+    sql: 100.0 * sum(closed) / nullif(sum(closed) + sum(fallout), 0)
+    description: Share of resolved locks that closed.
+    unit: percent
+    owner: lending-data
+  fallout_rate_pct:
+    sql: 100.0 * sum(fallout) / nullif(sum(closed) + sum(fallout), 0)
+    description: Share of resolved locks that fell out.
+    unit: percent
+    owner: lending-data
+  withdrawal_rate_pct:
+    sql: 100.0 * sum(withdrawn) / nullif(sum(closed) + sum(fallout), 0)
+    description: Share of resolved locks the borrower withdrew (the part outreach can influence).
+    unit: percent
+    owner: lending-data
+  extensions:
+    sql: sum(extensions)
+    description: Lock extensions bought.
+    unit: extensions
+    owner: capital-markets-data
+  extension_cost_usd:
+    sql: sum(extension_cost_usd)
+    description: Extension fees absorbed by the lender.
+    unit: USD
+    owner: capital-markets-data
+  cycle_days:
+    sql: sum(lock_to_close_days) / nullif(sum(closed), 0)
+    description: Average days from the first lock to closing, for loans that closed.
+    unit: days
+    owner: lending-data
+  gain_on_sale_usd:
+    sql: sum(gain_on_sale_usd)
+    description: Expected gain on sale of the loans that closed.
+    unit: USD
+    owner: finance-analytics

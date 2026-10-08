@@ -1,0 +1,22 @@
+# Data contract: mortgage.silver.branches (owner: lending-data). Validated by adl.core.contracts in CI.
+id: mortgage.silver.branches
+version: 1.0.0
+domain: mortgage
+layer: silver
+table: branches
+kind: conformed
+status: built
+description: Branches and the region each belongs to; the gateway uses it for row-level security.
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
+classification: internal
+schema:
+- {name: branch_id, type: string, nullable: false}
+- {name: name, type: string, nullable: false}
+- {name: region, type: string, nullable: false}
+primary_key: [branch_id]
+quality:
+- check: unique
+  columns: [branch_id]
+- {check: accepted_values, column: region, values: [north, south]}
+slo: {completeness_pct: 100, freshness_days: 365}
+inputs: [mortgage.bronze.branches]

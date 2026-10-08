@@ -1,0 +1,25 @@
+# Data contract: mortgage.silver.stage_events (owner: lending-data). Validated by adl.core.contracts in CI.
+id: mortgage.silver.stage_events
+version: 1.0.0
+domain: mortgage
+layer: silver
+table: stage_events
+kind: conformed
+status: built
+description: Pipeline stage changes and final outcomes per application after removing the resent batch; orphan events are quarantined.
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
+classification: confidential
+schema:
+- {name: application_id, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: stage, type: string, nullable: false}
+primary_key: [application_id, day, stage]
+quality:
+- check: unique
+  columns: [application_id, day, stage]
+- {check: accepted_values, column: stage, values: [processing, underwriting, conditional_approval, clear_to_close, closed, withdrawn, expired, denied]}
+- {check: referential, column: application_id, ref: mortgage.silver.applications.application_id}
+- {check: freshness, column: day}
+- {check: row_count_min, value: 10000}
+slo: {completeness_pct: 99.5, freshness_days: 1, max_quarantine_pct: 1.0}
+inputs: [mortgage.bronze.stage_events, mortgage.silver.applications]

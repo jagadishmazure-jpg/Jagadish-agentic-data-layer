@@ -1,53 +1,38 @@
-# Data contract (PLANNED, nothing built yet): mortgage.gold.fallout_risk for the fictional Quillmere Home Loans. Validated by adl.core.contracts in CI.
+# Data contract: mortgage.gold.fallout_risk (owner: lending-data). Validated by adl.core.contracts in CI.
 id: mortgage.gold.fallout_risk
-version: 0.1.0
+version: 1.0.0
 domain: mortgage
 layer: gold
 table: fallout_risk
 kind: insight_product
-status: planned
-description: Probability each locked application falls out before closing, with the main drivers.
-owner:
-  team: lending-data
-  steward: Lending data steward
-  contact: lending-data@quillmere.example
-classification: internal
+status: built
+description: Probability each active lock falls out within 14 days, from the logistic model in adl.domains.mortgage.risk, with its largest driver and the value at risk; uses process signals only, no credit or protected attributes.
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
+classification: confidential
 schema:
-- name: application_id
-  type: string
-  nullable: false
-- name: product
-  type: string
-  nullable: false
-- name: channel
-  type: string
-  nullable: false
-- name: days_to_lock_expiry
-  type: int
-  nullable: false
-- name: probability
-  type: float
-  nullable: false
-- name: top_driver
-  type: string
-  nullable: false
-primary_key: &id001
-- application_id
+- {name: application_id, type: string, nullable: false}
+- {name: branch_id, type: string, nullable: false}
+- {name: region, type: string, nullable: false}
+- {name: lo_id, type: string, nullable: false}
+- {name: product, type: string, nullable: false}
+- {name: channel, type: string, nullable: false}
+- {name: days_to_lock_expiry, type: int, nullable: false}
+- {name: rate_gap_bps, type: float, nullable: false, description: Locked rate minus market rate in basis points; positive means the market is cheaper}
+- {name: probability, type: float, nullable: false}
+- {name: risk_band, type: string, nullable: false}
+- {name: top_driver, type: string, nullable: false}
+- {name: value_at_risk_usd, type: float, nullable: false}
+primary_key: [application_id]
 quality:
 - check: unique
-  columns: *id001
-slo:
-  completeness_pct: 99.5
-  freshness_days: 1
+  columns: [application_id]
+- {check: range, column: probability, min: 0, max: 1}
+- {check: accepted_values, column: risk_band, values: [high, medium, low]}
+slo: {completeness_pct: 100, freshness_days: 1}
 acceptable_use:
-  allowed_purposes:
-  - pipeline_management
-  prohibited_purposes:
-  - credit_decisioning
-  - pricing_by_protected_characteristic
-  - sale_of_data_to_third_parties
-consumers:
-- agent:mortgage-assistant
-inputs:
-- mortgage.silver.applications
+  allowed_purposes: [pipeline_management, branch_operations]
+  prohibited_purposes: [credit_decisioning, pricing_by_protected_characteristic, sale_of_data_to_third_parties]
+  notes: Prioritises who to call and which documents to chase. It must never be used to approve, decline or price a loan.
+consumers: [agent:mortgage-assistant, agent:branch-copilot-north, agent:branch-copilot-south]
+inputs: [mortgage.gold.lock_position]
 agent_exposed: true

@@ -1,0 +1,21 @@
+# Data contract: mortgage.silver.loan_officers (owner: lending-data). Validated by adl.core.contracts in CI.
+id: mortgage.silver.loan_officers
+version: 1.0.0
+domain: mortgage
+layer: silver
+table: loan_officers
+kind: conformed
+status: built
+description: Loan officer codes and their branch (no names are needed by any product).
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
+classification: internal
+schema:
+- {name: lo_id, type: string, nullable: false}
+- {name: branch_id, type: string, nullable: false}
+primary_key: [lo_id]
+quality:
+- check: unique
+  columns: [lo_id]
+- {check: referential, column: branch_id, ref: mortgage.silver.branches.branch_id}
+slo: {completeness_pct: 100, freshness_days: 365}
+inputs: [mortgage.bronze.loan_officers]

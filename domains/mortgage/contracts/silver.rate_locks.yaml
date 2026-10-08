@@ -1,0 +1,29 @@
+# Data contract: mortgage.silver.rate_locks (owner: capital-markets-data). Validated by adl.core.contracts in CI.
+id: mortgage.silver.rate_locks
+version: 1.0.0
+domain: mortgage
+layer: silver
+table: rate_locks
+kind: conformed
+status: built
+description: Rate-lock events per application (lock, extension, relock) with the expiry day, the locked rate and the extension fee.
+owner: {team: capital-markets-data, steward: Lock desk data steward, contact: lock-desk-data@quillmere.example}
+classification: confidential
+schema:
+- {name: application_id, type: string, nullable: false}
+- {name: event, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: lock_expiry_day, type: int, nullable: false}
+- {name: locked_rate_pct, type: float, nullable: false}
+- {name: fee_usd, type: float, nullable: false}
+primary_key: [application_id, event, day]
+quality:
+- check: unique
+  columns: [application_id, event, day]
+- {check: accepted_values, column: event, values: [lock, extension, relock]}
+- {check: range, column: locked_rate_pct, min: 2, max: 12}
+- {check: range, column: fee_usd, min: 0}
+- {check: referential, column: application_id, ref: mortgage.silver.applications.application_id}
+- {check: freshness, column: day}
+slo: {completeness_pct: 99.5, freshness_days: 1, max_quarantine_pct: 1.0}
+inputs: [mortgage.bronze.rate_locks, mortgage.silver.applications]

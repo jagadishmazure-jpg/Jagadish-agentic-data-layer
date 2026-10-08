@@ -1,0 +1,28 @@
+# Data contract: mortgage.silver.pipeline_notes (owner: lending-data). Validated by adl.core.contracts in CI.
+id: mortgage.silver.pipeline_notes
+version: 1.0.0
+domain: mortgage
+layer: silver
+table: pipeline_notes
+kind: conformed
+status: built
+description: Free-text notes by processors and loan officers with borrower names, e-mail addresses and phone numbers masked and instruction-like text flagged.
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
+classification: confidential
+schema:
+- {name: note_id, type: string, nullable: false}
+- {name: application_id, type: string, nullable: false}
+- {name: lo_id, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: author_role, type: string, nullable: false}
+- {name: text_redacted, type: string, nullable: false}
+- {name: injection_flag, type: bool, nullable: false}
+- {name: pii_redacted, type: bool, nullable: false}
+primary_key: [note_id]
+quality:
+- check: unique
+  columns: [note_id]
+- {check: referential, column: application_id, ref: mortgage.silver.applications.application_id}
+slo: {completeness_pct: 100, freshness_days: 7}
+inputs: [mortgage.bronze.pipeline_notes, mortgage.silver.applications]
+text_fields: [text_redacted]

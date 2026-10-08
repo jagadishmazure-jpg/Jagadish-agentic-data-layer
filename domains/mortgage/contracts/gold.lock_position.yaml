@@ -1,0 +1,48 @@
+# Data contract: mortgage.gold.lock_position (owner: lending-data). Validated by adl.core.contracts in CI.
+id: mortgage.gold.lock_position
+version: 1.0.0
+domain: mortgage
+layer: gold
+table: lock_position
+kind: data_product
+status: built
+description: Every active rate lock on the as-of morning - days to expiry, stage, outstanding documents, contact recency and unanswered calls; no borrower identity.
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
+classification: confidential
+schema:
+- {name: application_id, type: string, nullable: false}
+- {name: branch_id, type: string, nullable: false}
+- {name: region, type: string, nullable: false}
+- {name: lo_id, type: string, nullable: false}
+- {name: product, type: string, nullable: false}
+- {name: channel, type: string, nullable: false}
+- {name: purpose, type: string, nullable: false}
+- {name: loan_amount_usd, type: float, nullable: false}
+- {name: locked_rate_pct, type: float, nullable: false}
+- {name: market_rate_pct, type: float, nullable: false}
+- {name: lock_day, type: int, nullable: false}
+- {name: lock_expiry_day, type: int, nullable: false}
+- {name: days_to_expiry, type: int, nullable: false}
+- {name: extensions, type: int, nullable: false}
+- {name: stage, type: string, nullable: false}
+- {name: days_in_stage, type: int, nullable: false}
+- {name: conditions_total, type: int, nullable: false}
+- {name: docs_outstanding, type: int, nullable: false}
+- {name: days_since_contact, type: int, nullable: false}
+- {name: unanswered_calls_7d, type: int, nullable: false}
+- {name: as_of_day, type: int, nullable: false}
+primary_key: [application_id]
+quality:
+- check: unique
+  columns: [application_id]
+- {check: range, column: days_to_expiry, min: 0}
+- {check: range, column: docs_outstanding, min: 0}
+- {check: accepted_values, column: stage, values: [processing, underwriting, conditional_approval, clear_to_close]}
+- {check: freshness, column: as_of_day}
+slo: {completeness_pct: 100, freshness_days: 1}
+acceptable_use:
+  allowed_purposes: [pipeline_management, branch_operations]
+  prohibited_purposes: [credit_decisioning, pricing_by_protected_characteristic, sale_of_data_to_third_parties]
+consumers: [agent:mortgage-assistant, agent:branch-copilot-north, agent:branch-copilot-south]
+inputs: [mortgage.silver.applications, mortgage.silver.rate_locks, mortgage.silver.stage_events, mortgage.silver.conditions, mortgage.silver.contacts, mortgage.silver.market_rates, mortgage.silver.branches]
+agent_exposed: true

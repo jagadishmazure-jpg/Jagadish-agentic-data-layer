@@ -1,0 +1,28 @@
+# Data contract: mortgage.silver.contacts (owner: lending-data). Validated by adl.core.contracts in CI.
+id: mortgage.silver.contacts
+version: 1.0.0
+domain: mortgage
+layer: silver
+table: contacts
+kind: conformed
+status: built
+description: Outbound calls (reached or not) and document chases per application from the dialler; rows with an unknown outcome are quarantined.
+owner: {team: lending-data, steward: Lending data steward, contact: lending-data@quillmere.example}
+classification: confidential
+schema:
+- {name: contact_id, type: string, nullable: false}
+- {name: application_id, type: string, nullable: false}
+- {name: lo_id, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: kind, type: string, nullable: false}
+- {name: outcome, type: string, nullable: false}
+primary_key: [contact_id]
+quality:
+- check: unique
+  columns: [contact_id]
+- {check: accepted_values, column: kind, values: [call, document_chase]}
+- {check: accepted_values, column: outcome, values: [reached, no_answer, sent]}
+- {check: referential, column: application_id, ref: mortgage.silver.applications.application_id}
+- {check: freshness, column: day}
+slo: {completeness_pct: 99.5, freshness_days: 1, max_quarantine_pct: 1.0}
+inputs: [mortgage.bronze.contacts, mortgage.silver.applications]
