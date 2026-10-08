@@ -1,0 +1,15 @@
+# Fairness check for the healthcare domain, written before the simulator, the model or any result.
+# The group is a synthetic attribute (G1 or G2) on synthetic patients; it stands in for a demographic attribute
+# and is never a model feature and never reaches an agent. Only the fairness audit reads it, from restricted silver.
+# The selection-rate band is the four-fifths heuristic, applied here as a screening threshold, not a legal or
+# regulatory test. Results are reported hit or miss, like the KPI targets.
+groups: [G1, G2]
+reference_group: G1
+selection_rate_ratio: {min: 0.80, max: 1.25}   # group G2 rate / group G1 rate for each measure below
+decisions:
+  bed_alarm: "share of patients given a bed alarm during the stay"
+  hourly_rounding: "share of patients put on hourly rounding during the stay"
+  mobility_aid: "share of patients given a mobility aid during the stay"
+  sitter_request: "share of patients given a sitter during the stay"
+  protected_before_fall: "share of patients who fell that had a preventive measure in place on the day (equal opportunity)"
+max_falls_per_1000_gap: 1.5                     # absolute gap in falls per 1,000 bed-days between the groups

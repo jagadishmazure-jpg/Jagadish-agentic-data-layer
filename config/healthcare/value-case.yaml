@@ -1,0 +1,27 @@
+# Phase 0 for the healthcare domain: the value case, written before the simulator, the model or any result.
+# All data in this domain is fully synthetic and PHI-free: no real patient, clinician or hospital record is used.
+# `adl healthcare value-case` measures the baselines from gold.ward_fall_rates through the metrics layer;
+# `adl healthcare value` reports the simulated result against these targets, including any target that is missed.
+use_case: healthcare-inpatient-fall-prevention
+domain: healthcare
+business_problem: >-
+  Halsey Vale Health assigns fall-prevention measures from a fall-risk score taken at admission and
+  reassessed every few days, so measures go to patients whose risk was high on arrival rather than to the
+  patients whose risk is high tonight. Sitters are scarce and expensive, bed alarms are left on patients who
+  no longer need them, and falls with harm add days to a stay.
+sponsor: Chief nursing officer (fictional role)
+decision_owners: [nurse in charge of each ward, ward nurses, patient safety team]
+measurement_window_days: 28
+kpis:
+  # target_change_pct is relative to the current rules over the same window
+  - {metric: falls_per_1000_bed_days, direction: down, target_change_pct: -20, why: "fewer inpatient falls"}
+  - {metric: harm_falls, direction: down, target_change_pct: -25, why: "fewer falls that injure the patient"}
+  - {metric: time_to_intervention_days, direction: down, target_change_pct: -30, why: "preventive measures start sooner after admission"}
+  - {metric: sitter_shifts, direction: down, target_change_pct: -10, why: "the scarcest and most expensive measure is used only where it pays"}
+value_tree:
+  collect: [admissions, nursing fall-risk assessments, daily nursing observations, preventive measures in place, fall incident reports, nursing notes]
+  insights: [fall risk in the next three days per patient]
+  actions: [bed alarm, hourly rounding, mobility aid, sitter request; every one approved by a nurse]
+  value: [falls avoided, falls with harm avoided, nurse and sitter time used where it prevents falls]
+  monetise: [net value after the cost of measures, cost per outcome including AI and platform cost, FOCUS cost export to FinOps]
+non_goals: [medication changes, diagnosis, treatment, discharge decisions, staffing or performance evaluation]
