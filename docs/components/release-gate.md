@@ -1,7 +1,7 @@
 # Component: release gate
 
-Twenty-six checks that must all pass before a change ships: 15 for retail and 11 for mortgage,
-covering data, models, retrieval, access, injection, approvals, value and adapters. `adl gate` exits 1 on any failure and CI runs it on every
+Thirty-eight checks that must all pass before a change ships: 15 for retail, 11 for mortgage and 12 for
+insurance, covering data, models, retrieval, access, injection, approvals, value, fairness reporting and adapters. `adl gate` exits 1 on any failure and CI runs it on every
 push.
 
 ## 1. Purpose
@@ -13,7 +13,7 @@ push.
 
 ```mermaid
 flowchart LR
-  D[data: contracts, quality, lineage] --> G{26 checks}
+  D[data: contracts, quality, lineage] --> G{38 checks}
   M[models: forecast, stockout, retrieval] --> G
   S[safety: attacks, PII, audit, injection, approvals] --> G
   V[value: interval, KPI report, adapters] --> G
@@ -24,8 +24,8 @@ flowchart LR
 ## 3. How it works
 
 `gate_checks()` runs each retail check against the cached lake, models and evaluations and returns
-name, pass/fail and a detail; `adl.domains.mortgage.report.gate_checks()` does the same for mortgage,
-and `all_gate_checks()` prefixes each name with its domain and combines them. Thresholds are deliberately relative where possible (beat the baseline, beat
+name, pass/fail and a detail; `adl.domains.mortgage.report.gate_checks()` and `adl.domains.insurance.report.gate_checks()` do the
+same for mortgage and insurance, and `all_gate_checks()` prefixes each name with its domain and combines them. Thresholds are deliberately relative where possible (beat the baseline, beat
 the rule, interval above zero) so they do not need retuning when the data changes.
 
 ## 4. Key files
@@ -34,6 +34,7 @@ the rule, interval above zero) so they do not need retuning when the data change
 |---|---|
 | `src/adl/cli.py` | `gate_checks`, `all_gate_checks` and `cmd_gate` |
 | `src/adl/domains/mortgage/report.py` | The 11 mortgage checks |
+| `src/adl/domains/insurance/report.py` | The 12 insurance checks, including fairness results reported |
 | `.github/workflows/ci.yml` | Runs `adl gate` on every push and pull request |
 | `tests/test_cli.py` | `test_release_gate_passes` |
 
@@ -182,9 +183,10 @@ own step so a failure is visible by name.
 
 ## 11. Security and governance
 
-Nine of the 26 checks are security checks (retail: attacks, PII, audit chain, injected actions,
-injection reaching the approver; mortgage: attacks, PII, audit chain, injected actions) and two are
-governance checks (person approval above thresholds, one per domain).
+Thirteen of the 38 checks are security checks (retail: attacks, PII, audit chain, injected actions,
+injection reaching the approver; mortgage and insurance: attacks, PII, audit chain, injected actions) and
+three are governance checks (person approval above thresholds, one per domain). Insurance adds a check
+that the fairness screen is reported, hit or miss.
 
 ## 12. Observability
 

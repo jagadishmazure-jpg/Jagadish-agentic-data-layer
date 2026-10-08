@@ -25,16 +25,27 @@ flowchart LR
 | Order | Domain | Fictional organisation | First use case | Decision | Status |
 |---|---|---|---|---|---|
 | 1 | Mortgage | Quillmere Home Loans | Rate-lock fallout | Which locks get outreach, a document chase or a lock extension | **Built** ([docs/mortgage](mortgage/README.md)) |
-| 2 | Insurance | Ferrowind Insurance | Claims triage and leakage | Queue assignment, leakage review, subrogation referral | Planned |
+| 2 | Insurance | Ferrowind Insurance | Claims triage and leakage | Queue assignment, leakage review, subrogation referral | **Built** ([docs/insurance](insurance/README.md)) |
 | 3 | Healthcare | Halsey Vale Health | Inpatient fall risk | Bed alarm, hourly rounding, mobility support | Planned |
 
 Mortgage was built second because its decision (who to call today) has the same shape as retail
 (what to order today): a risk score per item, a small set of levers, a person approving the expensive
 ones, and a value ledger. Building it moved the approval workflow and the cost export into the shared
 core (`adl.core.agentflow`, `adl.core.finops`) and made the gateway's row-scope table a parameter.
-Insurance and healthcare are still planned: each has its use case, KPIs and levers in
-`src/adl/core/domain.py` and three validated contracts in `domains/<name>/contracts/`; the plan for
-each is in its `domains/<name>/README.md`.
+Insurance was built third on the same core with no change to retail or mortgage; it added the shared
+logistic model (`adl.core.logit`) and a fairness screen across synthetic proxy groups. Healthcare is
+still planned: it has its use case, KPIs and levers in `src/adl/core/domain.py` and three validated
+contracts in `domains/healthcare/contracts/`; the plan is in `domains/healthcare/README.md`.
+
+## Insurance items still planned
+
+| Item | Why it is not built |
+|---|---|
+| MCP and A2A serving for insurance | The gateway is in-process; serving reuses `adl.serve` once remote access is needed |
+| Live executor (claims system) | No real system to call; dry run keeps the demo safe |
+| Conditional fairness measures, settlement amounts, intersectional groups | The screen compares selection rates only; deeper tests need a design with compliance and legal advice |
+| Missed KPI targets (cycle time, reopen rate, backlog spread) | Reported as missed; triage is capped by complex-unit capacity, so closing them needs capacity or process changes, not only better routing |
+| Rolling-origin backtests for the claim models | One test window per model today |
 
 ## Mortgage items still planned
 
@@ -42,7 +53,7 @@ each is in its `domains/<name>/README.md`.
 |---|---|
 | MCP and A2A serving for mortgage | The gateway is in-process; serving reuses `adl.serve` once a second domain needs it remotely |
 | Live executor (origination system, dialler) | No real system to call; dry run keeps the demo safe |
-| Fair-lending outcome testing | The synthetic data has no protected attributes to test with; needs a design with compliance |
+| Fair-lending outcome testing | The mortgage simulator has no proxy groups; insurance shows the pattern (a screen with limits set before results) that mortgage would follow with compliance |
 | Missed KPI targets (pull-through, extension cost, cycle time) | Reported as missed; closing them needs levers that speed processing, not only reorder attention |
 
 ## Retail items still planned

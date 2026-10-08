@@ -431,3 +431,111 @@ KPI targets reported (hit or miss)                          pass    1/4 met
 mortgage gate: PASS (11/11)
 ```
 <!-- /output -->
+
+## Insurance (Ferrowind Insurance)
+
+Simulated, like retail and mortgage. Full write-up: [insurance/README.md](insurance/README.md).
+
+<!-- output: insurance models -->
+```text
+complexity at first notice: 1206 test claims, 25.0% complex; each method fills the queues the rule fills
+method                AUC    complex-unit precision  complex-unit recall  complex claims sent to fast track  Brier
+--------------------  -----  ----------------------  -------------------  ---------------------------------  ------
+complexity model      0.797  62.1%                   44.0%                28                                 0.1430
+current routing rule  0.747  60.7%                   43.0%                27                                 0.1877
+Brier for the rule is the base-rate forecast (the rule gives no probability)
+
+leakage at payment: 264 audited test payments, 23.5% overpaid; each method reviews 57
+method                      AUC    precision  overpayment dollars found
+--------------------------  -----  ---------  -------------------------
+leakage model (p x amount)  0.762  33.3%      76.0%
+largest payment first       0.527  29.8%      75.4%
+
+subrogation at payment: 22.7% recoverable; each method refers 34
+method                   AUC    precision  recall
+-----------------------  -----  ---------  ------
+subrogation model        0.962  94.1%      53.3%
+intake third-party flag  0.708  79.4%      45.0%
+
+gold.claims_triage: complex 4, fast_track 17, standard 31; 8 differ from the current rule
+```
+<!-- /output -->
+
+<!-- output: insurance value -->
+```text
+forward simulation: 30 replications x 28 days, common random numbers, paired 95% bootstrap intervals
+ledger      lever                 metric            current rules  with agents  change     95% interval
+----------  --------------------  ----------------  -------------  -----------  ---------  ----------------------
+VL-INS-001  all levers            net_value         $44,439        $318,966     $274,527   [$249,068, $299,963]
+VL-INS-002  all levers            overpayment_paid  $287,758       $285,122     -$2,636    [-$12,334, $7,820]
+VL-INS-003  all levers            recoveries        $421,656       $710,848     $289,192   [$265,174, $313,304]
+VL-INS-004  all levers            leakage           $755,447       $525,671     -$229,776  [-$251,821, -$208,525]
+VL-INS-005  queue assignment      net_value         $44,439        $42,247      -$2,193    [-$25,070, $21,877]
+VL-INS-006  queue assignment      overpayment_paid  $287,758       $312,070     $24,312    [$13,731, $35,575]
+VL-INS-007  queue assignment      recoveries        $421,656       $445,710     $24,054    [$7,409, $42,406]
+VL-INS-008  queue assignment      leakage           $755,447       $809,954     $54,507    [$38,122, $72,078]
+VL-INS-009  leakage review        net_value         $44,439        $67,796      $23,357    [$19,804, $26,983]
+VL-INS-010  leakage review        overpayment_paid  $287,758       $264,402     -$23,357   [-$26,983, -$19,804]
+VL-INS-011  leakage review        recoveries        $421,656       $421,656     $0         [$0, $0]
+VL-INS-012  leakage review        leakage           $755,447       $732,090     -$23,357   [-$26,983, -$19,804]
+VL-INS-013  subrogation referral  net_value         $44,439        $273,864     $229,425   [$212,602, $246,456]
+VL-INS-014  subrogation referral  overpayment_paid  $287,758       $287,758     $0         [$0, $0]
+VL-INS-015  subrogation referral  recoveries        $421,656       $667,414     $245,758   [$228,716, $262,801]
+VL-INS-016  subrogation referral  leakage           $755,447       $513,408     -$242,039  [-$262,736, -$222,265]
+
+KPI targets (config/insurance/value-case.yaml), all levers vs the current rules:
+kpi                  current rules  with agents  change  95% interval of the change  target  result
+-------------------  -------------  -----------  ------  --------------------------  ------  ------
+cycle_days           8.64           8.54         -1.1%   [-0.16, -0.03]              -10%    MISSED
+leakage_usd          755,447.18     525,671.10   -30.4%  [-251,821.10, -208,524.81]  -25%    met
+reopen_rate_pct      4.80           4.96         +3.3%   [+0.05, +0.25]              -15%    MISSED
+backlog_spread_days  3.76           3.27         -13.0%  [-0.67, -0.29]              -20%    MISSED
+
+activity per 28 days (mean of replications):
+arm            fast_tracked  escalations  reviews  referrals  paid
+-------------  ------------  -----------  -------  ---------  -------
+current rules  431.6         34.6         280.0    158.6      1,282.5
+agent          473.2         41.0         280.0    224.0      1,289.6
+triage only    473.2         41.0         280.0    162.5      1,289.6
+review only    431.6         34.6         280.0    158.6      1,282.5
+referral only  431.6         34.6         280.0    224.0      1,282.5
+
+estimated AI and platform cost for 28 days (assumed rates in config/pricing.yaml): $76
+  Foundry Models: $0.12 (168 briefs)
+  Azure Container Apps: $0.76 (25,200 vCPU-seconds)
+  Azure AI Search: $70.00 (28 days)
+  Storage: $4.67 (28 days)
+  prompt 569 tokens and output 306 tokens per brief (measured), 168 briefs
+cost per $1,000 of net value: $0.28; per action: $0.0420 (1,800 actions)
+value after cost: $274,451 per 28 days (30-replication mean)
+```
+<!-- /output -->
+
+<!-- output: insurance fairness -->
+```text
+screening heuristic on synthetic data, not a legal test: G2/G1 selection-rate ratio within [0.8, 1.25], cycle-days gap within 2.0 days (config/insurance/fairness.yaml, set before results)
+
+history, current rules (gold.fairness_monitor, 180 days):
+decision              G1      G2      G2/G1  G2 claims  limit
+--------------------  ------  ------  -----  ---------  ------
+cycle_days            8.1728  8.3664  1.024  3016       within
+fast_track            0.3306  0.3320  1.004  3151       within
+leakage_review        0.2160  0.2298  1.064  3016       within
+subrogation_referral  0.1233  0.1240  1.006  3016       within
+
+forward simulation, 30 replications (rates for decisions, mean days for cycle_days):
+decision              arm            G1      G2      G2/G1 [95%]           change vs current rules [95%]  gap         limit
+--------------------  -------------  ------  ------  --------------------  -----------------------------  ----------  ------
+fast_track            current rules  0.3351  0.3293  0.984 [0.961, 1.009]  -                              -           within
+fast_track            agent          0.3752  0.3487  0.931 [0.907, 0.957]  -0.053 [-0.068, -0.038]        -           within
+leakage_review        current rules  0.2212  0.2139  0.970 [0.939, 1.000]  -                              -           within
+leakage_review        agent          0.2185  0.2150  0.986 [0.961, 1.010]  +0.016 [-0.007, +0.040]        -           within
+subrogation_referral  current rules  0.1230  0.1250  1.021 [0.978, 1.064]  -                              -           within
+subrogation_referral  agent          0.1722  0.1762  1.029 [0.986, 1.074]  +0.008 [-0.047, +0.063]        -           within
+cycle_days            current rules  8.6615  8.6111  0.994 [0.986, 1.003]  -                              -0.05 days  within
+cycle_days            agent          8.5198  8.5816  1.007 [0.999, 1.016]  +0.013 [+0.007, +0.018]        +0.06 days  within
+
+all limits met: history True, forward True
+```
+<!-- /output -->
+

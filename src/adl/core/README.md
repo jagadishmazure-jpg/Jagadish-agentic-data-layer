@@ -13,6 +13,7 @@ Domain-neutral platform code shared by every domain.
 | `finops.py` | AI and platform cost estimate and FOCUS 1.0 rows |
 | `guardrails.py` | Injection screen, PII redaction, untrusted quoting, Prompt Shields request |
 | `lineage.py` | OpenLineage run events, validation, upstream walk |
+| `logit.py` | Shared L2 logistic regression, top driver per row and AUC (used by insurance) |
 | `llm.py` | Chat client selection (offline mock or Foundry) and token estimate |
 | `quality.py` | Quality checks and SLOs evaluated with SQL |
 | `semantic.py` | Metrics layer: metric definitions compiled to parameterised SQL |

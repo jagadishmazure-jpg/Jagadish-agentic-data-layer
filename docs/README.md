@@ -17,11 +17,12 @@
 | `metrics.md` | Every number, as real command output |
 | `deployment.md` | How the gated deployment would work; nothing is deployed |
 | `implementation-guide.md` | Adopt this: eight steps and a checklist |
-| `adding-a-domain.md` | How a domain is added on the shared core, with mortgage as the second worked example |
+| `adding-a-domain.md` | How a domain is added on the shared core, with mortgage and insurance as worked examples |
 | `interview-guide.md` | Two-minute and ten-minute explanations, expected questions |
 | `glossary.md` | Terms used across the docs |
 | `components/` | One document per component, 16 sections each |
 | `mortgage/` | The mortgage domain (Quillmere Home Loans): five documents, 16 sections each, and its business-model mapping |
+| `insurance/` | The insurance domain (Ferrowind Insurance): six documents, 16 sections each, including the fairness screen, and its business-model mapping |
 | `infra/` | One document per infrastructure stack and the workflows |
 | `adr/` | Architecture decision records |
 

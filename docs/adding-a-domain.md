@@ -1,8 +1,10 @@
 # Adding a domain
 
-How a domain (insurance, healthcare or your own) is added on top of the shared core. Retail was the
-first worked example and mortgage the second: mortgage followed these steps and is built; insurance and
-healthcare have steps 1 and 2 done.
+How a domain (healthcare or your own) is added on top of the shared core. Retail was the first worked
+example, mortgage the second and insurance the third: both followed these steps and are built;
+healthcare has steps 1 and 2 done. Insurance added two things a new domain can reuse: the shared
+logistic model (`adl.core.logit`) and a fairness screen whose limits are committed, like the value case,
+before any result.
 
 ```mermaid
 flowchart TD
@@ -73,14 +75,14 @@ flowchart TD
 | Domain | Decision | Restricted silver | Agent-exposed gold | Prohibited purposes |
 |---|---|---|---|---|
 | Mortgage (Quillmere Home Loans), **built** | Which locks get a call, a document chase or an extension | applications (applicant name, e-mail, phone) | pipeline_daily, lock_position, fallout_risk, pipeline_notes, value_ledger | credit decisioning, pricing by protected characteristic, sale of data |
-| Insurance (Ferrowind Insurance) | Which queue each claim goes to; which closed claims to review for leakage | claims (claimant name) | claims_triage, leakage_signals | claim denial without human review, underwriting by protected characteristic, sale of data |
+| Insurance (Ferrowind Insurance), **built** | Which queue each claim goes to; which payments to review; which claims to refer for recovery | claims (claimant name, e-mail, phone), postcode_groups (synthetic proxy group) | claims_daily, workload_daily, claims_triage, leakage_signals, claim_notes, fairness_monitor, value_ledger | claim denial without human review, underwriting by protected characteristic, sale of data |
 | Healthcare (Halsey Vale Health) | Which patients the nurse in charge checks first each shift | inpatient_encounters (patient name) | fall_risk_worklist, ward_fall_rates | insurance eligibility, employee performance management, sale of data |
 
-Each domain's README has its plan or, for mortgage, its results: [mortgage](../domains/mortgage/README.md),
+Each domain's README has its plan or, for built domains, its results: [mortgage](../domains/mortgage/README.md),
 [insurance](../domains/insurance/README.md), [healthcare](../domains/healthcare/README.md).
 
 ## Tests that keep a planned domain honest
 
 `tests/test_contracts.py` checks that planned domains have only planned contracts and that exactly
-retail and mortgage are built; `tests/test_repo_hygiene.py` checks each planned README says it is planned and not
+retail, mortgage and insurance are built; `tests/test_repo_hygiene.py` checks each planned README says it is planned and not
 built.

@@ -31,7 +31,7 @@ flowchart LR
 | Safety | `adl access`, `adl injection` | 14/14 attacks stopped; injected actions executed: 0 |
 | Action | `adl agents` | 185 actions, 41 to a person, 4 rejected |
 | Value | `adl value` | +$9,678 [9,531; 9,830]; 4 of 5 targets met |
-| Gate | `adl gate` | 26 checks (15 retail, 11 mortgage); CI fails on any |
+| Gate | `adl gate` | 38 checks (15 retail, 11 mortgage, 12 insurance); CI fails on any |
 
 ## Questions I expect
 
@@ -42,7 +42,8 @@ flowchart LR
 | What happens with prompt injection? | I measured it with a deliberately gullible model: with quoting off it obeys 3 of 3 injected notes, but the validator catches all three and no injected action ever executes in any configuration. |
 | Why did the stockout target fail? | Better ordering recovers lost sales (-37.6%) but the share of days a shelf ends empty barely moves. Raising safety stock fixes stockouts but loses money in a simulator that does not model customers who leave; that is the next modelling step. |
 | How is personal data protected? | Identifiers are split into a restricted table at silver, the rest is pseudonymised, segments need 10 members, notes are redacted, and a scan finds 0 PII rows in anything an agent can read. |
-| How does this scale beyond one domain? | Everything in `src/adl/core` is domain-neutral. Mortgage was added as a second built domain on the same core (AUC 0.730 against 0.462 for the expiry rule; +$193,003 per 28 days, 1 of 4 targets met); insurance and healthcare have contracts and a registry entry. |
+| How does this scale beyond one domain? | Everything in `src/adl/core` is domain-neutral. Mortgage was added as a second built domain on the same core (AUC 0.730 against 0.462 for the expiry rule; +$193,003 per 28 days, 1 of 4 targets met) and insurance as a third (+$274,527 per 28 days, 1 of 4 targets met, with a fairness screen); healthcare has contracts and a registry entry. |
+| Is the insurance assistant fair? | I can only say it passes a screen I set before the results: G2/G1 selection-rate ratios within 0.80 to 1.25 and a cycle-days gap under 2 days, on synthetic postcode groups. Every ratio passes, but the agent fast-tracks one group measurably less than today's rules (0.931 against 0.984), probably through report lag. It is a screening heuristic, not a legal test. |
 | Why three clouds? | To show the data layer and its controls are portable: the same storage interface, OIDC-only CI, least-privilege identities. Azure is primary. |
 | What is not done? | Hosting, a live executor, Purview registration, calibrated probabilities. They are listed as planned in the README. |
 

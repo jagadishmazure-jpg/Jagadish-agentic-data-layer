@@ -5,7 +5,8 @@ a bronze/silver/gold lakehouse, governed metrics, forecasting and risk models, a
 data gateway that AI agents must go through (exposed over MCP and A2A), a Microsoft Agent Framework
 workflow with human approval, and a value ledger that says what the agents are worth after their own
 cost. The first domain is retail, for **Wrenfield Grocers**, a fictional eight-store grocer. The second
-is mortgage, for **Quillmere Home Loans**, a fictional six-branch lender, built on the same platform.
+is mortgage, for **Quillmere Home Loans**, a fictional six-branch lender, and the third is insurance,
+for **Ferrowind Insurance**, a fictional six-office claims operation, both built on the same platform.
 
 The structure follows the MIT Sloan article
 [What leaders still get wrong about AI](https://mitsloan.mit.edu/ideas-made-to-matter/what-leaders-still-get-wrong-about-ai)
@@ -36,10 +37,17 @@ is gated off.
   net value** per 28 days (95% interval $171,585 to $214,486). It meets **1 of 4** KPI targets
   (fallout -14.9% against -12%) and misses pull-through, extension cost and cycle time; see
   [docs/mortgage](docs/mortgage/README.md).
+* **Third domain, insurance (also simulated):** claims triage, leakage review and subrogation referral.
+  The assistant adds **$274,527 net value** per 28 days (95% interval $249,068 to $299,963), almost all
+  from a subrogation model that beats the intake flag (AUC 0.962 against 0.708). It meets **1 of 4**
+  KPI targets (leakage -30.4% against -25%); cycle time, reopen rate (which got worse) and backlog
+  spread are missed, and the triage lever adds nothing measurable. An unfair-discrimination screen
+  across synthetic postcode groups finds every ratio inside the 0.80 to 1.25 band; see
+  [docs/insurance](docs/insurance/README.md).
 * **Safety:** in each domain 14 of 14 access attacks stopped, 0 personal-data rows in anything an agent can read, a
   hash-chained audit log that detects tampering, and no injected instruction ever executed in any of
   4 defence configurations.
-* **Quality:** **473 automated tests**, a 26-check release gate (15 retail, 11 mortgage), ruff, CodeQL, gitleaks, an SBOM,
+* **Quality:** **566 automated tests**, a 38-check release gate (15 retail, 11 mortgage, 12 insurance), ruff, CodeQL, gitleaks, an SBOM,
   checkov, tflint and Terraform tests on every push.
 * **Stack:** Python 3.13, DuckDB, Delta Lake, Microsoft Agent Framework, MCP, A2A, Terraform, Bicep,
   GitHub Actions with OIDC.
@@ -50,15 +58,16 @@ is gated off.
 |---|---|---|
 | Retail domain (Wrenfield Grocers): 25 contracts, pipeline, models, agents, value ledger | **Built**, runs offline | `src/adl/domains/retail/` |
 | Mortgage domain (Quillmere Home Loans): 15 contracts, pipeline, fallout model, agents, value ledger | **Built**, runs offline; in-process gateway only (no MCP or A2A yet) | `src/adl/domains/mortgage/`, [docs/mortgage](docs/mortgage/README.md) |
-| Shared approval workflow and FOCUS cost module used by mortgage | **Built** | `src/adl/core/agentflow.py`, `src/adl/core/finops.py` |
-| Insurance (Ferrowind Insurance), healthcare (Halsey Vale Health) | **Planned**: use case, KPIs, levers and 3 contracts each; no pipeline | `domains/<name>/` |
+| Insurance domain (Ferrowind Insurance): 18 contracts, pipeline, claim models, agents, value ledger, fairness screen | **Built**, runs offline; in-process gateway only (no MCP or A2A yet) | `src/adl/domains/insurance/`, [docs/insurance](docs/insurance/README.md) |
+| Shared approval workflow, FOCUS cost module and logistic model used by mortgage and insurance | **Built** | `src/adl/core/agentflow.py`, `src/adl/core/finops.py`, `src/adl/core/logit.py` |
+| Healthcare (Halsey Vale Health) | **Planned**: use case, KPIs, levers and 3 contracts; no pipeline | `domains/healthcare/` |
 | Local storage (Delta Lake + DuckDB) | **Built**, the only adapter run end to end | `src/adl/storage/local.py` |
 | Fabric OneLake, Azure Databricks, BigQuery, S3 + Glue + Athena adapters | **Written, not run** against a real account; tested with fake clients | `src/adl/storage/` |
 | Azure AI Search knowledge adapter, Foundry model client, Prompt Shields request | **Written, not run**; the offline index, mock model and regex screen are used | `src/adl/knowledge/`, `src/adl/core/` |
 | MCP server and A2A endpoint | **Built**, exercised in-memory; not hosted | `src/adl/serve/` |
 | Terraform (Azure, GCP, AWS) and Bicep | **Written, not run**: validate, test, lint and checkov in CI; never applied | `infra/` |
 | Deploy and teardown workflows with OIDC | **Written, not run**: gated by `DEPLOY_ENABLED`, which is off | `.github/workflows/` |
-| Live executor (ERP orders, shelf prices, loan origination system), Microsoft Purview registration | **Planned** | [docs/roadmap.md](docs/roadmap.md) |
+| Live executor (ERP orders, shelf prices, loan origination system, claims system), Microsoft Purview registration | **Planned** | [docs/roadmap.md](docs/roadmap.md) |
 
 The four organisations are fictional; any resemblance to a real company is accidental. No real
 employer or client data or name is used anywhere.
@@ -111,11 +120,13 @@ sit side by side.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-adl domains        # four domains, two built
+adl domains        # four domains, three built
 adl run            # bronze -> silver -> gold, quality per product
 adl value          # the value ledger with intervals, KPI targets, cost per outcome
 adl mortgage value # the mortgage value ledger (adl mortgage --help lists every step)
-adl gate           # the 26-check release gate for both domains
+adl insurance value     # the insurance value ledger
+adl insurance fairness  # the unfair-discrimination screen across synthetic proxy groups
+adl gate           # the 38-check release gate for the three built domains
 pytest -q          # the full test suite
 ```
 
@@ -184,6 +195,16 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 | Create value | Paired forward simulation from the real end-of-history pipeline | +$193,003 net value per 28 days, interval [$171,585, $214,486] |
 | Monetise | Value after AI and platform cost; FOCUS cost rows | $0.39 of cost per $1,000 of value; 112 FOCUS rows |
 
+## Insurance in five steps
+
+| Step (MIT CISR) | In this repository | Real number |
+|---|---|---|
+| Collect the right data | 12 source feeds landed as bronze, conformed to 11 silver tables under contract | 77,711 bronze rows; 30 intake retries removed; 16 rows quarantined |
+| Generate insights | Complexity at first notice; leakage and subrogation learned from random audits; hybrid retrieval | subrogation AUC 0.962 vs 0.708 for the intake flag; leakage AUC 0.762 vs 0.527 for largest-first |
+| Take action | Queue assignments, leakage reviews and subrogation referrals; larger fast-track and referral proposals wait for a team lead | 70 actions, 6 sent to a person, 2 rejected, 68 dry-run executions |
+| Create value | Paired forward simulation from the real end-of-history claims state | +$274,527 net value per 28 days, interval [$249,068, $299,963] |
+| Monetise | Value after AI and platform cost; FOCUS cost rows | $0.28 of cost per $1,000 of value; 112 FOCUS rows |
+
 ## What is honest about the numbers
 
 * The world is synthetic, so the value is a simulation result, not a measured business result. The
@@ -200,6 +221,13 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
   (target -20%) and cycle time -0.6% (target -5%). The targets were written before the results.
 * Mortgage borrower behaviour is a hand-written hazard model; the value is only as good as those
   assumptions, and no fair-lending outcome test exists yet.
+* Insurance misses three of four KPI targets: cycle time -1.1% (target -10%), reopen rate +3.3%
+  (target -15%, so it got worse) and backlog spread -13.0% (target -20%). The queue-assignment lever
+  adds nothing measurable (-$2,193, interval -$25,070 to $21,877), and the complexity model is barely
+  better than today's routing rule at equal queue sizes.
+* The insurance fairness check is a screening heuristic on synthetic groups, not a legal test. Every
+  ratio is inside the band, but the agent fast-tracks one group measurably less than today's rules do
+  (ratio 0.931 against 0.984).
 * Cost uses assumed unit rates in `config/pricing.yaml`, not quotes.
 
 ## Documentation
@@ -212,6 +240,7 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 | Business and value | [docs/value-case.md](docs/value-case.md), [docs/mit-article-mapping.md](docs/mit-article-mapping.md), [docs/ai-business-models.md](docs/ai-business-models.md), [docs/operating-model.md](docs/operating-model.md) |
 | Every component in depth | [docs/components/README.md](docs/components/README.md) and [docs/infra/README.md](docs/infra/README.md) |
 | The mortgage domain | [docs/mortgage/README.md](docs/mortgage/README.md) |
+| The insurance domain | [docs/insurance/README.md](docs/insurance/README.md) |
 | Decisions | [docs/adr/README.md](docs/adr/README.md) |
 
 ## Repository layout
@@ -221,6 +250,7 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 | `src/adl/core/` | Domain-neutral platform: contracts, quality, lineage, metrics layer, guardrails, gateway, audit, approval workflow, FinOps |
 | `src/adl/domains/retail/` | Retail (built): simulator, pipeline, models, agents, value |
 | `src/adl/domains/mortgage/` | Mortgage (built): simulator, pipeline, fallout model, agents, value |
+| `src/adl/domains/insurance/` | Insurance (built): simulator, pipeline, claim models, agents, value, fairness screen |
 | `src/adl/knowledge/` | Embeddings, knowledge graph, retrieval, Azure AI Search adapter |
 | `src/adl/serve/` | MCP server and A2A endpoint |
 | `src/adl/storage/` | Local Delta Lake adapter and the four cloud adapters |

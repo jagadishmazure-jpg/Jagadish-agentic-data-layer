@@ -43,3 +43,10 @@ Orchestrator steps are mapped in [mortgage/README.md](mortgage/README.md#busines
 The article's point is that the business model matters, not that every firm should jump to the last
 model. Existing+ is where the measured value is today, and it builds the assets (governed data
 products, an agent-safe gateway, a value ledger) the other three models need.
+
+## Insurance
+
+The insurance domain (Ferrowind Insurance) starts at Existing+ too: the same adjusters, review team
+and subrogation unit, spent on the claims where they pay most, with a fairness monitor alongside. Its
+Customer Proxy, Modular Creator and Orchestrator steps are mapped in
+[insurance/README.md](insurance/README.md#business-model-mapping-mit-cisr).

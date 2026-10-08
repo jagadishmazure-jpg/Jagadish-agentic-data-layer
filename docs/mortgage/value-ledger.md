@@ -198,8 +198,8 @@ net value; the search service dominates it, not the model.
 net-value interval above zero; KPI results follow the value case's direction and targets; the ledger
 product is written and passes its contract; the simulation is deterministic and leaves the start state
 untouched; the value-case baseline comes from the metrics layer; FOCUS rows sum to the estimate; every
-`adl mortgage` step runs; the gate passes. The mortgage gate adds 11 checks to retail's 15, so
-`adl gate` runs 26.
+`adl mortgage` step runs; the gate passes. The mortgage gate adds 11 checks to retail's 15 (insurance
+adds 12 more, so `adl gate` now runs 38).
 
 ## 10. Guardrails
 
