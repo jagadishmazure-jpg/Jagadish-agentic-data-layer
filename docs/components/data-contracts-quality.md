@@ -140,12 +140,12 @@ adl quality
 
 <!-- output: contracts -->
 ```text
-domain      status   contracts  silver  gold  agent-exposed  with PII  quality checks
-----------  -------  ---------  ------  ----  -------------  --------  --------------
-retail      built    25         15      10    10             1         93
-mortgage    built    15         10      5     5              1         55
-insurance   built    18         11      7     7              1         68
-healthcare  planned  3          1       2     2              1         3
+domain      status  contracts  silver  gold  agent-exposed  with PII  quality checks
+----------  ------  ---------  ------  ----  -------------  --------  --------------
+retail      built   25         15      10    10             1         93
+mortgage    built   15         10      5     5              1         55
+insurance   built   18         11      7     7              1         68
+healthcare  built   15         9       6     6              1         58
 
 all contracts valid: True
 ```

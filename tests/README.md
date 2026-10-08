@@ -15,6 +15,7 @@ The test suite: `pytest -q`. Everything runs offline; the full suite took about 
 | `test_knowledge.py` | Retrieval quality, embeddings, graph, region trimming, Azure AI Search adapter |
 | `test_mortgage.py` | Mortgage end to end: pipeline, point-in-time view, model, policy, gateway, knowledge, agents, value, CLI |
 | `test_insurance.py` | Insurance end to end: pipeline, point-in-time view, claim models, shared logit, policy, gateway, knowledge, agents, value, fairness, CLI |
+| `test_healthcare.py` | Healthcare end to end: pipeline, pseudonyms, fall-risk model vs Morse, policy, gateway masking and purposes, knowledge, nursing-only agents, value, fairness, CLI |
 | `test_models.py` | Forecast, stockout risk, elasticity, markdown; no ground truth in product code |
 | `test_pipeline.py` | Quarantine, dedup, PII split, redaction, k-anonymity, Delta, determinism |
 | `test_quality_lineage_semantic.py` | Quality checks and freshness, OpenLineage events, metrics layer |

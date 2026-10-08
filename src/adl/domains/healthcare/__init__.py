@@ -1,5 +1,7 @@
-"""Healthcare domain (PLANNED): inpatient fall risk for the fictional Halsey Vale Health.
+"""Healthcare domain (built): inpatient fall prevention for the fictional Halsey Vale Health.
 
-Only contracts exist (domains/healthcare/contracts, status: planned). Nothing here is built; see
-domains/healthcare/README.md for the plan. Any build will use synthetic data only.
+Fully synthetic, PHI-free data: every patient, record and note is invented by a seeded simulator. The
+assistant proposes four nursing measures only (bed alarm, hourly rounding, mobility aid, sitter
+request), each approved by the nurse in charge; the fall-risk model is not a medical device. See
+docs/healthcare/README.md.
 """

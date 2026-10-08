@@ -69,6 +69,7 @@ class Identity:
     rows: dict[str, tuple[str, ...]] = field(default_factory=dict)
     deny_columns: dict[str, tuple[str, ...]] = field(default_factory=dict)
     max_rows: int = 100
+    mask_columns: dict[str, tuple[str, ...]] = field(default_factory=dict)
 ```
 <!-- /code -->
 

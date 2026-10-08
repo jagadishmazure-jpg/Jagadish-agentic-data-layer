@@ -112,12 +112,12 @@ adl metrics
 
 <!-- output: domains -->
 ```text
-domain      status   fictional organisation  use case                   contracts  levers
-----------  -------  ----------------------  -------------------------  ---------  ------------------------------------------------------
-retail      built    Wrenfield Grocers       stockouts and markdown     25         purchase orders, inter-store transfers, markdowns
-mortgage    built    Quillmere Home Loans    loan pipeline and fallout  15         borrower outreach, lock extension, document chase
-insurance   built    Ferrowind Insurance     claims triage and leakage  18         queue assignment, leakage review, subrogation referral
-healthcare  planned  Halsey Vale Health      inpatient fall risk        3          bed alarm, hourly rounding, mobility support
+domain      status  fictional organisation  use case                   contracts  levers
+----------  ------  ----------------------  -------------------------  ---------  --------------------------------------------------------
+retail      built   Wrenfield Grocers       stockouts and markdown     25         purchase orders, inter-store transfers, markdowns
+mortgage    built   Quillmere Home Loans    loan pipeline and fallout  15         borrower outreach, lock extension, document chase
+insurance   built   Ferrowind Insurance     claims triage and leakage  18         queue assignment, leakage review, subrogation referral
+healthcare  built   Halsey Vale Health      inpatient fall risk        15         bed alarm, hourly rounding, mobility aid, sitter request
 ```
 <!-- /output -->
 

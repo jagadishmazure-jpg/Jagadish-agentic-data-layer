@@ -21,12 +21,12 @@ storage: local (delta); auth: local filesystem
 
 <!-- output: contracts -->
 ```text
-domain      status   contracts  silver  gold  agent-exposed  with PII  quality checks
-----------  -------  ---------  ------  ----  -------------  --------  --------------
-retail      built    25         15      10    10             1         93
-mortgage    built    15         10      5     5              1         55
-insurance   built    18         11      7     7              1         68
-healthcare  planned  3          1       2     2              1         3
+domain      status  contracts  silver  gold  agent-exposed  with PII  quality checks
+----------  ------  ---------  ------  ----  -------------  --------  --------------
+retail      built   25         15      10    10             1         93
+mortgage    built   15         10      5     5              1         55
+insurance   built   18         11      7     7              1         68
+healthcare  built   15         9       6     6              1         58
 
 all contracts valid: True
 ```
@@ -299,7 +299,7 @@ cloud adapters run against fake clients only; none has been run against a real a
 ```text
 check                                                                 result  detail
 --------------------------------------------------------------------  ------  --------------------------------------------------
-retail: contracts valid (all domains)                                 pass    61 contracts
+retail: contracts valid (all domains)                                 pass    73 contracts
 retail: every built product passes its contract                       pass    25/25
 retail: lineage events valid                                          pass    78 events
 retail: forecast beats both naive baselines                           pass    WAPE 31.9%
@@ -337,8 +337,21 @@ insurance: nothing above a threshold executed without a person        pass    0 
 insurance: net value interval above zero                              pass    [$249,068, $299,963]
 insurance: KPI targets reported (hit or miss)                         pass    1/4 met
 insurance: fairness results reported (hit or miss)                    pass    history 4/4, forward 8/8 within limits
+healthcare: every built product passes its contract                   pass    15/15
+healthcare: lineage events valid                                      pass    48 events
+healthcare: fall-risk model beats the Morse total (AUC)               pass    0.650 vs 0.506
+healthcare: hybrid retrieval recall@5 >= 0.90                         pass    0.979
+healthcare: every access attack stopped                               pass    14/14
+healthcare: no patient identifiers in agent-exposed products          pass    0 rows
+healthcare: audit chain verifies and detects tampering                pass    14 records verified
+healthcare: no injected action ever executed                          pass    4 configurations
+healthcare: every measure approved by a person before the dry run     pass    0 violations
+healthcare: only nursing measures can be proposed or executed         pass    kinds: bed_alarm, hourly_rounding, mobility_aid
+healthcare: net value interval above zero                             pass    [$171,462, $205,593]
+healthcare: KPI targets reported (hit or miss)                        pass    1/4 met
+healthcare: fairness results reported (hit or miss)                   pass    history 6/6, forward 12/12 within limits
 
-release gate: PASS (38/38)
+release gate: PASS (51/51)
 ```
 <!-- /output -->
 
