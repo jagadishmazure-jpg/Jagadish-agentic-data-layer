@@ -80,6 +80,7 @@ class DataGateway:
         audit: AuditLog,
         knowledge=None,
         knowledge_policy: dict | None = None,
+        scope_table: tuple[str, str] = ("stores", "store_id"),
     ) -> None:
         self.store = store
         self.products = {c.table: c for c in contracts.values() if c.layer == "gold" and c.agent_exposed}
@@ -88,9 +89,11 @@ class DataGateway:
         self.audit = audit
         self.knowledge = knowledge
         self.knowledge_policy = knowledge_policy or {"allowed_purposes": []}
+        # Row scope: which members (stores, branches, ...) belong to each region, from a silver master table.
+        table, self.member_col = scope_table
         self.region_stores: dict[str, tuple[str, ...]] = {}
-        for r in store.sql("SELECT region, store_id FROM silver.stores ORDER BY store_id"):
-            self.region_stores[r["region"]] = (*self.region_stores.get(r["region"], ()), r["store_id"])
+        for r in store.sql(f'SELECT region, "{self.member_col}" AS m FROM {store.qualified("silver", table)} ORDER BY m'):
+            self.region_stores[r["region"]] = (*self.region_stores.get(r["region"], ()), r["m"])
 
     # ---------------------------------------------------------------- checks
     def _identity(self, identity: str) -> Identity:
@@ -121,8 +124,8 @@ class DataGateway:
         if regions:
             if "region" in c.columns:
                 out.append(("region", list(regions)))
-            if "store_id" in c.columns:
-                out.append(("store_id", [s for r in regions for s in self.region_stores.get(r, ())]))
+            if self.member_col in c.columns:
+                out.append((self.member_col, [s for r in regions for s in self.region_stores.get(r, ())]))
         return out
 
     def _check_value(self, c: Contract, col: str, value: Any) -> Any:
