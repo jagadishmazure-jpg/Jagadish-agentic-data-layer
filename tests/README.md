@@ -1,6 +1,6 @@
 # tests
 
-The test suite: `pytest -q`. Everything runs offline in about two minutes.
+The test suite: `pytest -q`. Everything runs offline; the full suite took about 33 seconds on the build machine.
 
 | File | What it does |
 |---|---|
