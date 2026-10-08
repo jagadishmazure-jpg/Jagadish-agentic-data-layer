@@ -22,7 +22,9 @@ adl adapters                cloud storage adapters against fake clients
 adl iac                     static summary of the Terraform, Bicep and workflows (no cloud, no terraform run)
 adl mcp --identity I | mcp-demo
 adl a2a-demo
-adl gate                    release gate (exit 1 on any failure)
+adl mortgage STEP [--out F] the mortgage domain: run, quality, lineage, metrics, value-case, risk, retrieval,
+                            access, agents, injection, value, focus, gate
+adl gate                    release gate for every built domain (exit 1 on any failure)
 """
 
 from __future__ import annotations
@@ -641,8 +643,20 @@ def gate_checks() -> list[tuple[str, bool, str]]:
     return out
 
 
+def cmd_mortgage(a) -> int:
+    from adl.domains.mortgage import report
+
+    return report.main(a.step, a.out)
+
+
+def all_gate_checks() -> list[tuple[str, bool, str]]:
+    from adl.domains.mortgage import report
+
+    return [(f"retail: {n}", ok, d) for n, ok, d in gate_checks()] + [(f"mortgage: {n}", ok, d) for n, ok, d in report.gate_checks()]
+
+
 def cmd_gate(a) -> int:
-    checks = gate_checks()
+    checks = all_gate_checks()
     print(_table([[name, "pass" if ok else "FAIL", detail] for name, ok, detail in checks], ["check", "result", "detail"]))
     failed = [c for c in checks if not c[1]]
     print(f"\nrelease gate: {'PASS' if not failed else 'FAIL'} ({len(checks) - len(failed)}/{len(checks)})")
@@ -685,6 +699,12 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("focus")
     p.add_argument("--out")
     p.set_defaults(fn=cmd_focus)
+    p = sub.add_parser("mortgage")
+    from adl.domains.mortgage.report import STEPS
+
+    p.add_argument("step", choices=STEPS)
+    p.add_argument("--out", help="for focus: write the FOCUS CSV here")
+    p.set_defaults(fn=cmd_mortgage)
     p = sub.add_parser("mcp")
     p.add_argument("--identity", default="agent:store-copilot-north")
     p.set_defaults(fn=cmd_mcp)

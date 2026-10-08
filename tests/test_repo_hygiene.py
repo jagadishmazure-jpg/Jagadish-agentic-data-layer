@@ -220,6 +220,6 @@ def test_readme_test_count_is_the_real_count():
 
 
 def test_planned_domains_say_planned():
-    for d in ("mortgage", "insurance", "healthcare"):
+    for d in ("insurance", "healthcare"):
         t = flat(ROOT / "domains" / d / "README.md")
         assert "planned" in t.lower() and "not built" in t.lower()

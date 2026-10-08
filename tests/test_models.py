@@ -95,9 +95,10 @@ def test_markdown_candidates_respect_policy(lake):
 
 
 def test_product_code_never_reads_ground_truth():
-    allowed = {"synth.py", "cli.py"}
+    # the simulators and evaluation harnesses may read the ground truth; product code never does
+    allowed = {"domains/retail/synth.py", "cli.py", "domains/mortgage/world.py"}
     for p in (ROOT / "src/adl").rglob("*.py"):
-        if p.name in allowed:
+        if str(p.relative_to(ROOT / "src/adl")) in allowed:
             continue
         tree = ast.parse(p.read_text())
         names = {a.name for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) for a in n.names}
