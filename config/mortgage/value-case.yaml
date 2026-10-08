@@ -1,0 +1,25 @@
+# Phase 0 for the mortgage domain: the value case, written before any model. The business problem, the
+# KPIs with their baseline source and target, and the value tree (MIT CISR's five steps). `adl mortgage
+# value-case` measures the baseline from gold.pipeline_daily through the metrics layer; `adl mortgage value`
+# reports the simulated result against these targets, including any target that is missed.
+use_case: mortgage-lock-fallout
+domain: mortgage
+business_problem: >-
+  Quillmere Home Loans loses gain on sale and pays hedge losses when locked loans fall out, and pays a fee
+  every time a lock is extended. Loan officers call whoever is closest to lock expiry and every expiring
+  lock is extended, whatever the market has done.
+sponsor: Head of mortgage operations (fictional role)
+decision_owners: [loan officers, processors, pipeline manager, lock desk]
+measurement_window_days: 28
+kpis:
+  # target_change_pct is relative to the current rules over the same window
+  - {metric: pull_through_pct, direction: up, target_change_pct: 3, why: "more locked loans close"}
+  - {metric: fallout_rate_pct, direction: down, target_change_pct: -12, why: "fewer withdrawals and walk-aways after a lock"}
+  - {metric: extension_cost_usd, direction: down, target_change_pct: -20, why: "fewer extension fees absorbed by the lender"}
+  - {metric: cycle_days, direction: down, target_change_pct: -5, why: "loans close sooner after the lock"}
+value_tree:
+  collect: [applications, rate locks and extensions, stage events, document conditions, calls and chases, market rates, pipeline notes]
+  insights: [fallout risk with its driver, value at risk, slack to lock expiry]
+  actions: [borrower outreach, document chases, lock extensions]
+  value: [gain on sale kept, hedge losses avoided, extension fees saved]
+  monetise: [net value after outreach cost, cost per outcome including AI and platform cost, FOCUS cost export to FinOps]

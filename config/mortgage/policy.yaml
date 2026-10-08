@@ -1,0 +1,13 @@
+# Decision policy for the mortgage assistant (adl.domains.mortgage.policy). Code reads this file; agents cannot change it.
+capacity:                 # the same capacity the teams have today; the agent only changes who gets it
+  calls_per_day: 60
+  chases_per_day: 60
+extension:
+  days: 7
+  max_extensions: 3
+  relock_when_borrower_no_worse_off: true   # skip the fee only when relocking at market is cheaper and the borrower's rate does not rise
+approval:                 # anything above a threshold waits for a named person; everything is dry-run
+  extension_fee_usd: 400  # lock extensions with a fee above this wait for the pipeline manager
+  calls: never            # outreach calls and document chases are below every threshold
+execution:
+  mode: dry-run           # the live executor (loan origination system, dialler) is not implemented
