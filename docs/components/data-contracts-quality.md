@@ -143,7 +143,7 @@ adl quality
 domain      status   contracts  silver  gold  agent-exposed  with PII  quality checks
 ----------  -------  ---------  ------  ----  -------------  --------  --------------
 retail      built    25         15      10    10             1         93
-mortgage    planned  3          1       2     2              1         3
+mortgage    built    15         10      5     5              1         55
 insurance   planned  3          1       2     2              1         3
 healthcare  planned  3          1       2     2              1         3
 

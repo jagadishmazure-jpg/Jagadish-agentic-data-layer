@@ -3,7 +3,7 @@
 | File | What it does |
 |---|---|
 | `architecture.md` | Layers, request and action paths, design choices, shared vs domain code |
-| `roadmap.md` | Phases 0 to 6, built vs planned, the next three domains |
+| `roadmap.md` | Phases 0 to 6, built vs planned, the domains built and planned |
 | `value-case.md` | Phase 0: the problem, KPI baselines and targets, the result, value attribution |
 | `mit-article-mapping.md` | How each idea in the MIT Sloan article maps to code (paraphrased, credited by link) |
 | `ai-business-models.md` | The four AI-era business models and what the data layer provides for each |
@@ -17,10 +17,11 @@
 | `metrics.md` | Every number, as real command output |
 | `deployment.md` | How the gated deployment would work; nothing is deployed |
 | `implementation-guide.md` | Adopt this: eight steps and a checklist |
-| `adding-a-domain.md` | How mortgage, insurance and healthcare are added on the shared core |
+| `adding-a-domain.md` | How a domain is added on the shared core, with mortgage as the second worked example |
 | `interview-guide.md` | Two-minute and ten-minute explanations, expected questions |
 | `glossary.md` | Terms used across the docs |
 | `components/` | One document per component, 16 sections each |
+| `mortgage/` | The mortgage domain (Quillmere Home Loans): five documents, 16 sections each, and its business-model mapping |
 | `infra/` | One document per infrastructure stack and the workflows |
 | `adr/` | Architecture decision records |
 

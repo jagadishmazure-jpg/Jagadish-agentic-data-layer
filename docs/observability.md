@@ -43,7 +43,7 @@ flowchart LR
 
 ## Today, offline
 
-`adl gate` is the summary signal: 15 checks covering quality, lineage, models, retrieval, access,
+`adl gate` is the summary signal: 26 checks (15 retail, 11 mortgage) covering quality, lineage, models, retrieval, access,
 injection, approvals, value and adapters. `adl lineage --out out/lineage/events.jsonl` writes the lineage file. The audit
 chain is kept in memory per run and verified at the end of `adl agents`, `adl access` and `adl
 mcp-demo`.

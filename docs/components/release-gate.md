@@ -1,7 +1,7 @@
 # Component: release gate
 
-Fifteen checks that must all pass before a change ships, covering data, models, retrieval, access,
-injection, approvals, value and adapters. `adl gate` exits 1 on any failure and CI runs it on every
+Twenty-six checks that must all pass before a change ships: 15 for retail and 11 for mortgage,
+covering data, models, retrieval, access, injection, approvals, value and adapters. `adl gate` exits 1 on any failure and CI runs it on every
 push.
 
 ## 1. Purpose
@@ -13,7 +13,7 @@ push.
 
 ```mermaid
 flowchart LR
-  D[data: contracts, quality, lineage] --> G{15 checks}
+  D[data: contracts, quality, lineage] --> G{26 checks}
   M[models: forecast, stockout, retrieval] --> G
   S[safety: attacks, PII, audit, injection, approvals] --> G
   V[value: interval, KPI report, adapters] --> G
@@ -23,15 +23,17 @@ flowchart LR
 
 ## 3. How it works
 
-`gate_checks()` runs each check against the cached lake, models and evaluations and returns name,
-pass/fail and a detail. Thresholds are deliberately relative where possible (beat the baseline, beat
+`gate_checks()` runs each retail check against the cached lake, models and evaluations and returns
+name, pass/fail and a detail; `adl.domains.mortgage.report.gate_checks()` does the same for mortgage,
+and `all_gate_checks()` prefixes each name with its domain and combines them. Thresholds are deliberately relative where possible (beat the baseline, beat
 the rule, interval above zero) so they do not need retuning when the data changes.
 
 ## 4. Key files
 
 | File | Role |
 |---|---|
-| `src/adl/cli.py` | `gate_checks` and `cmd_gate` |
+| `src/adl/cli.py` | `gate_checks`, `all_gate_checks` and `cmd_gate` |
+| `src/adl/domains/mortgage/report.py` | The 11 mortgage checks |
 | `.github/workflows/ci.yml` | Runs `adl gate` on every push and pull request |
 | `tests/test_cli.py` | `test_release_gate_passes` |
 
@@ -122,25 +124,36 @@ adl gate
 
 <!-- output: gate -->
 ```text
-check                                                     result  detail
---------------------------------------------------------  ------  ------------------------
-contracts valid (all domains)                             pass    34 contracts
-every built product passes its contract                   pass    25/25
-lineage events valid                                      pass    78 events
-forecast beats both naive baselines                       pass    WAPE 31.9%
-stockout model beats the cover rule on F1                 pass    F1 39.8% vs 25.8%
-hybrid retrieval recall@5 >= 0.90                         pass    0.972
-every access attack stopped                               pass    14/14
-no PII in agent-exposed products                          pass    0 rows
-audit chain verifies and detects tampering                pass    14 records verified
-no injected action ever executed                          pass    4 configurations
-with both defences nothing injected reaches the approver  pass    quoting on, validator on
-nothing above a threshold executed without a person       pass    0 violations
-net value interval above zero                             pass    [$9,531, $9,830]
-KPI targets reported (hit or miss)                        pass    4/5 met
-cloud adapters secretless                                 pass    4 adapters
+check                                                                 result  detail
+--------------------------------------------------------------------  ------  ------------------------
+retail: contracts valid (all domains)                                 pass    46 contracts
+retail: every built product passes its contract                       pass    25/25
+retail: lineage events valid                                          pass    78 events
+retail: forecast beats both naive baselines                           pass    WAPE 31.9%
+retail: stockout model beats the cover rule on F1                     pass    F1 39.8% vs 25.8%
+retail: hybrid retrieval recall@5 >= 0.90                             pass    0.972
+retail: every access attack stopped                                   pass    14/14
+retail: no PII in agent-exposed products                              pass    0 rows
+retail: audit chain verifies and detects tampering                    pass    14 records verified
+retail: no injected action ever executed                              pass    4 configurations
+retail: with both defences nothing injected reaches the approver      pass    quoting on, validator on
+retail: nothing above a threshold executed without a person           pass    0 violations
+retail: net value interval above zero                                 pass    [$9,531, $9,830]
+retail: KPI targets reported (hit or miss)                            pass    4/5 met
+retail: cloud adapters secretless                                     pass    4 adapters
+mortgage: every built product passes its contract                     pass    15/15
+mortgage: lineage events valid                                        pass    50 events
+mortgage: fallout model beats the expiry rule (AUC and precision@60)  pass    AUC 0.730 vs 0.462
+mortgage: hybrid retrieval recall@5 >= 0.90                           pass    0.979
+mortgage: every access attack stopped                                 pass    14/14
+mortgage: no borrower PII in agent-exposed products                   pass    0 rows
+mortgage: audit chain verifies and detects tampering                  pass    14 records verified
+mortgage: no injected action ever executed                            pass    4 configurations
+mortgage: nothing above a threshold executed without a person         pass    0 violations
+mortgage: net value interval above zero                               pass    [$171,585, $214,486]
+mortgage: KPI targets reported (hit or miss)                          pass    1/4 met
 
-release gate: PASS (15/15)
+release gate: PASS (26/26)
 ```
 <!-- /output -->
 
@@ -157,8 +170,9 @@ own step so a failure is visible by name.
 
 ## 11. Security and governance
 
-Five of the fifteen checks are security checks (attacks, PII, audit chain, injected actions,
-injection reaching the approver) and one is a governance check (person approval above thresholds).
+Nine of the 26 checks are security checks (retail: attacks, PII, audit chain, injected actions,
+injection reaching the approver; mortgage: attacks, PII, audit chain, injected actions) and two are
+governance checks (person approval above thresholds, one per domain).
 
 ## 12. Observability
 

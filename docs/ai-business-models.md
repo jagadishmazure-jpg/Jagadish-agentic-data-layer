@@ -32,6 +32,12 @@ The gateway's model (identity, product grant, purpose, row and column scope, aud
 all four; what changes is who the identities are and which purposes the contracts allow. That is why
 acceptable use lives in the contract and not in each agent.
 
+## Mortgage
+
+The mortgage domain (Quillmere Home Loans) also starts at Existing+: the same calls, chases and
+extensions, spent on the locks most likely to fall out. Its Customer Proxy, Modular Creator and
+Orchestrator steps are mapped in [mortgage/README.md](mortgage/README.md#business-model-mapping-mit-cisr).
+
 ## Why retail starts at Existing+
 
 The article's point is that the business model matters, not that every firm should jump to the last

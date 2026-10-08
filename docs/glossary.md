@@ -29,7 +29,7 @@
 | OpenLineage | Open standard for lineage run events (START, COMPLETE, FAIL) with input and output datasets. |
 | Pseudonym | HMAC of a customer id with a key held by the privacy office. |
 | Quarantine | Rows that fail a row-level contract check, kept in `silver.quarantine_<table>` instead of being dropped. |
-| Release gate | `adl gate`: 15 checks that must all pass. |
+| Release gate | `adl gate`: 26 checks (15 retail, 11 mortgage) that must all pass. |
 | Row scope | Row-level security: the region a copilot may see. |
 | Stockout | A store-product with no stock left at close. |
 | Value ledger | `gold.value_ledger`: value per lever and metric with a 95% interval, ids VL-RET-001 to 012. |

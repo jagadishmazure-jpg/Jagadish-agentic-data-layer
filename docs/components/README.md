@@ -22,7 +22,7 @@ points. Code excerpts and outputs are generated from the repository.
 | `value-ledger-finops.md` | Forward simulation, value ledger, cost per outcome, FOCUS export |
 | `mcp-a2a.md` | MCP server and A2A endpoint over the gateway |
 | `cloud-adapters.md` | Local and four cloud storage adapters |
-| `release-gate.md` | The 15-check release gate |
+| `release-gate.md` | The 26-check release gate (15 retail, 11 mortgage) |
 
 ```mermaid
 flowchart LR

@@ -6,6 +6,6 @@ One package per business domain.
 |---|---|
 | `__init__.py` | Package marker |
 | `retail/` | Built: simulator, pipeline, models, agents, value |
-| `mortgage/` | Planned: docstring only |
+| `mortgage/` | Built: simulator, pipeline, fallout model, agents, value |
 | `insurance/` | Planned: docstring only |
 | `healthcare/` | Planned: docstring only |

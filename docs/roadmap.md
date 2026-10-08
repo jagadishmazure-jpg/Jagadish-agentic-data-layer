@@ -24,15 +24,26 @@ flowchart LR
 
 | Order | Domain | Fictional organisation | First use case | Decision | Status |
 |---|---|---|---|---|---|
-| 1 | Mortgage | Quillmere Home Loans | Loan pipeline and fallout | Which applications get outreach, a lock extension or a document chase | Planned |
+| 1 | Mortgage | Quillmere Home Loans | Rate-lock fallout | Which locks get outreach, a document chase or a lock extension | **Built** ([docs/mortgage](mortgage/README.md)) |
 | 2 | Insurance | Ferrowind Insurance | Claims triage and leakage | Queue assignment, leakage review, subrogation referral | Planned |
 | 3 | Healthcare | Halsey Vale Health | Inpatient fall risk | Bed alarm, hourly rounding, mobility support | Planned |
 
-Each planned domain already has its use case, KPIs and levers in `src/adl/core/domain.py` and three
-validated contracts in `domains/<name>/contracts/`. Mortgage is next because its decision (who to call
-today) has the same shape as retail (what to order today): a risk score per item, a small set of
-levers, a person approving the expensive ones, and a value ledger. The plan for each is in its
-`domains/<name>/README.md`.
+Mortgage was built second because its decision (who to call today) has the same shape as retail
+(what to order today): a risk score per item, a small set of levers, a person approving the expensive
+ones, and a value ledger. Building it moved the approval workflow and the cost export into the shared
+core (`adl.core.agentflow`, `adl.core.finops`) and made the gateway's row-scope table a parameter.
+Insurance and healthcare are still planned: each has its use case, KPIs and levers in
+`src/adl/core/domain.py` and three validated contracts in `domains/<name>/contracts/`; the plan for
+each is in its `domains/<name>/README.md`.
+
+## Mortgage items still planned
+
+| Item | Why it is not built |
+|---|---|
+| MCP and A2A serving for mortgage | The gateway is in-process; serving reuses `adl.serve` once a second domain needs it remotely |
+| Live executor (origination system, dialler) | No real system to call; dry run keeps the demo safe |
+| Fair-lending outcome testing | The synthetic data has no protected attributes to test with; needs a design with compliance |
+| Missed KPI targets (pull-through, extension cost, cycle time) | Reported as missed; closing them needs levers that speed processing, not only reorder attention |
 
 ## Retail items still planned
 
