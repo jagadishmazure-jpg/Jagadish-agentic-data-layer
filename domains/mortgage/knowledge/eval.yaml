@@ -1,0 +1,27 @@
+# Retrieval evaluation set for the mortgage domain: questions a loan officer, processor or the assistant asks,
+# with the documents that answer them. Written by the same author as the corpus, so scores are optimistic.
+questions:
+  - {id: M01, q: "How much does a lock extension cost and who approves it?", relevant: [POL-LOCK, POL-APPROVAL]}
+  - {id: M02, q: "When should we relock instead of extending?", relevant: [POL-RELOCK, REV-BLANKET-EXT]}
+  - {id: M03, q: "Who should loan officers call first?", relevant: [POL-OUTREACH]}
+  - {id: M04, q: "Which documents slow processing down?", relevant: [POL-DOCS, REV-DOC-STALL]}
+  - {id: M05, q: "Can the fallout score be used to decline a loan?", relevant: [POL-FAIR-LENDING]}
+  - {id: M06, q: "Where do borrower phone numbers live?", relevant: [POL-PRIVACY]}
+  - {id: M07, q: "Why do broker loans fall out more?", relevant: [CH-BROKER, REV-RALLY]}
+  - {id: M08, q: "What went wrong during the rate rally?", relevant: [REV-RALLY]}
+  - {id: M09, q: "Why are Saltmarsh locks expiring?", relevant: [BR-B04]}
+  - {id: M10, q: "What extra work do FHA and VA files need?", relevant: [PROD-FHA-VA]}
+  - {id: M11, q: "Why are jumbo extensions expensive?", relevant: [PROD-JUMBO, BR-B06]}
+  - {id: M12, q: "Which branch has the most refinance borrowers?", relevant: [BR-B02]}
+  - {id: M13, q: "Do direct online borrowers answer calls?", relevant: [CH-DIRECT]}
+  - {id: M14, q: "Which documents are usually missing at Orchard Gate?", relevant: [BR-B05, PROD-FHA-VA]}
+  - {id: M15, q: "Can a pipeline note approve an extension?", relevant: [POL-APPROVAL]}
+  - {id: M16, q: "How many calls can loan officers make a day?", relevant: [POL-OUTREACH]}
+  - {id: M17, q: "How long do 30-year conventional files take?", relevant: [PROD-CONV30]}
+  - {id: M18, q: "Were blanket extensions worth it?", relevant: [REV-BLANKET-EXT]}
+  - {id: M19, q: "What should we do when a broker reports a competing offer?", relevant: [CH-BROKER]}
+  - {id: M20, q: "What happens when a lock expires and rates have risen?", relevant: [POL-LOCK, POL-RELOCK]}
+  - {id: M21, q: "Which branch writes most jumbo loans?", relevant: [BR-B06, PROD-JUMBO]}
+  - {id: M22, q: "Are 15-year borrowers rate sensitive?", relevant: [PROD-CONV15]}
+  - {id: M23, q: "How should Fenwick Hill handle rate drops?", relevant: [BR-B03, CH-BROKER]}
+  - {id: M24, q: "What is the main risk at Alder Row?", relevant: [BR-B01]}
