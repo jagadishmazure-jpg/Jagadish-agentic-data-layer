@@ -1,0 +1,27 @@
+# Retrieval evaluation set for the insurance domain: questions an adjuster, team lead or the assistant asks,
+# with the documents that answer them. Written by the same author as the corpus, so scores are optimistic.
+questions:
+  - {id: I01, q: "Which claims go to the complex unit today?", relevant: [POL-TRIAGE, POL-COMPLEX-UNIT]}
+  - {id: I02, q: "What happens when a complex claim is sent to fast track?", relevant: [POL-FAST-TRACK, REV-ESCALATIONS]}
+  - {id: I03, q: "How many payments can the review team check a day?", relevant: [POL-LEAKAGE]}
+  - {id: I04, q: "Can a leakage score reduce a payment?", relevant: [POL-LEAKAGE, POL-FAIR-CLAIMS]}
+  - {id: I05, q: "Which claims can be recovered from a third party?", relevant: [POL-SUBROGATION, REV-MISSED-RECOVERY]}
+  - {id: I06, q: "Why are audits used to measure leakage?", relevant: [POL-AUDIT]}
+  - {id: I07, q: "Who approves a large subrogation referral?", relevant: [POL-APPROVAL]}
+  - {id: I08, q: "Can the postcode be used to route a claim?", relevant: [POL-FAIR-CLAIMS, CH-PHONE]}
+  - {id: I09, q: "Where do claimant phone numbers live?", relevant: [POL-PRIVACY]}
+  - {id: I10, q: "Are glass claims simple?", relevant: [LINE-AUTO, MSG-REPAIRER-01]}
+  - {id: I11, q: "Why are escape of water claims risky?", relevant: [LINE-HOME, REV-ESCALATIONS]}
+  - {id: I12, q: "Do small commercial claims need the complex unit?", relevant: [LINE-COMMERCIAL]}
+  - {id: I13, q: "Why do phone claims arrive late?", relevant: [CH-PHONE, OF-F02]}
+  - {id: I14, q: "What does the Quenby office ask on the first call?", relevant: [OF-F02]}
+  - {id: I15, q: "Which office handles liability claims from shops?", relevant: [OF-F04]}
+  - {id: I16, q: "What should Wexmoor check before paying contents claims?", relevant: [OF-F05]}
+  - {id: I17, q: "Why are Corvane repair quotes high?", relevant: [OF-F06, REV-INVOICES]}
+  - {id: I18, q: "Who answers questions about recoveries in the east region?", relevant: [OF-F01]}
+  - {id: I19, q: "Which payments contain most overpayments?", relevant: [REV-INVOICES]}
+  - {id: I20, q: "Why were recoverable claims never referred?", relevant: [REV-MISSED-RECOVERY]}
+  - {id: I21, q: "Can a note on a claim approve a fast-track assignment?", relevant: [POL-APPROVAL]}
+  - {id: I22, q: "How much does a reopened claim cost?", relevant: [POL-COMPLEX-UNIT]}
+  - {id: I23, q: "Does Lisle Cross handle broker business?", relevant: [OF-F03]}
+  - {id: I24, q: "How long does a complex claim wait before work starts?", relevant: [POL-COMPLEX-UNIT]}

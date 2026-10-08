@@ -1,0 +1,41 @@
+# Agent identities for the insurance domain and what each may read through the data gateway (adl.core.access).
+# In Azure each identity is a Microsoft Entra ID agent identity / managed identity; here they are names.
+# products: data products (gold, agent_exposed contracts) plus "knowledge" for the knowledge layer.
+# purposes: must also be allowed by the product's contract; claim denial without human review and
+#   underwriting by protected characteristic are prohibited in every contract.
+# rows: row-level scope. region limits rows to that region's offices; omitted means every office.
+# deny_columns: column-level security per product.
+# No identity can read silver.claims (claimant identity) or silver.postcode_groups (the synthetic proxy group);
+# only the fairness audit reads those, in code, and agents see its aggregate output (fairness_monitor).
+identities:
+  agent:claims-assistant:
+    description: Plans queue assignments, leakage reviews and subrogation referrals for every office.
+    products: [claims_triage, leakage_signals, claim_notes, claims_daily, knowledge]
+    purposes: [claims_handling, claims_quality_review]
+    max_rows: 500
+  agent:office-copilot-east:
+    description: Answers claims managers in the east region about their claims.
+    products: [claims_triage, leakage_signals, claim_notes, claims_daily, knowledge]
+    purposes: [claims_handling, claims_quality_review]
+    rows: {region: [east]}
+    deny_columns: {leakage_signals: [proposed_usd, expected_overpayment_usd, expected_recovery_usd], claims_triage: [estimate_usd]}
+    max_rows: 200
+  agent:office-copilot-west:
+    description: Answers claims managers in the west region about their claims.
+    products: [claims_triage, leakage_signals, claim_notes, claims_daily, knowledge]
+    purposes: [claims_handling, claims_quality_review]
+    rows: {region: [west]}
+    deny_columns: {leakage_signals: [proposed_usd, expected_overpayment_usd, expected_recovery_usd], claims_triage: [estimate_usd]}
+    max_rows: 200
+  agent:claims-finance:
+    description: Reports claims performance and business value from the value ledger.
+    products: [value_ledger, claims_daily, workload_daily]
+    purposes: [value_reporting, performance_reporting]
+    max_rows: 500
+  agent:claims-compliance:
+    description: Monitors claim outcomes across synthetic postcode proxy groups (aggregates only).
+    products: [fairness_monitor, claims_daily]
+    purposes: [fairness_monitoring, performance_reporting]
+    max_rows: 200
+knowledge:
+  allowed_purposes: [claims_handling, claims_quality_review]

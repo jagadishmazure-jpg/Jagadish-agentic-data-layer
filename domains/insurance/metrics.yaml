@@ -1,0 +1,68 @@
+# Semantic layer for the insurance domain: every claims KPI is defined once, here, and compiled to SQL by
+# adl.core.semantic. The value case, agents (through the gateway) and the docs all use these definitions.
+# Backlog spread comes from gold.workload_daily (one row per day, not per region), so it is read directly there.
+source: gold.claims_daily
+dimensions:
+  day: day
+  week: "day // 7"
+  region: region
+  line: line
+  queue: queue
+metrics:
+  new_claims:
+    sql: sum(new_claims)
+    description: Claims reported and assigned to a queue.
+    unit: claims
+    owner: claims-data
+  paid_claims:
+    sql: sum(paid_claims)
+    description: Claims paid.
+    unit: claims
+    owner: claims-data
+  paid_usd:
+    sql: sum(paid_usd)
+    description: Amount paid on claims.
+    unit: USD
+    owner: claims-finance
+  cycle_days:
+    sql: sum(cycle_days) / nullif(sum(paid_claims), 0)
+    description: Average days from report to payment, for claims paid.
+    unit: days
+    owner: claims-data
+  reopen_rate_pct:
+    sql: 100.0 * sum(reopened) / nullif(sum(paid_claims), 0)
+    description: Claims reopened after payment, per 100 claims paid.
+    unit: percent
+    owner: claims-data
+  escalation_rate_pct:
+    sql: 100.0 * sum(escalations) / nullif(sum(new_claims), 0)
+    description: Claims escalated out of fast track, per 100 new claims.
+    unit: percent
+    owner: claims-data
+  review_rate_pct:
+    sql: 100.0 * sum(reviews) / nullif(sum(paid_claims), 0)
+    description: Share of paid claims that had a leakage review before payment.
+    unit: percent
+    owner: claims-quality
+  referral_rate_pct:
+    sql: 100.0 * sum(referrals) / nullif(sum(paid_claims), 0)
+    description: Subrogation referrals per 100 claims paid.
+    unit: percent
+    owner: claims-quality
+  recovered_usd:
+    sql: sum(recovered_usd)
+    description: Amount recovered from third parties by the subrogation unit.
+    unit: USD
+    owner: claims-finance
+  overpayment_found_usd:
+    sql: sum(overpayment_found_usd)
+    description: Overpayment removed by leakage reviews before payment.
+    unit: USD
+    owner: claims-quality
+  leakage_usd:
+    sql: sum(audit_overpayment_usd + audit_missed_recovery_usd) * sum(paid_claims) / nullif(sum(audited_claims), 0)
+    description: >-
+      Estimated leakage: overpayments paid plus recoveries missed, measured on the random closed-file audits and
+      scaled up to every paid claim.
+    unit: USD
+    owner: claims-quality

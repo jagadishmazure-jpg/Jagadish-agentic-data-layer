@@ -11,8 +11,10 @@ triage:                       # chosen on tuning seeds 4000-4009, never on the r
   fast_track_max_probability: 0.25
   fast_track_max_estimate_usd: 5000
 approval:                     # anything above a threshold waits for a named claims team lead; everything is dry-run
-  fast_track_estimate_usd: 3000           # a fast-track assignment for a claim estimated above this waits for the team lead
-  referral_expected_recovery_usd: 15000   # a subrogation referral expected to recover more than this waits for the team lead
+  # governance choices, set after one dry-run morning so the team lead sees the largest few proposals each day;
+  # the value simulation assumes every proposal is approved (docs/insurance/agents-gateway.md)
+  fast_track_estimate_usd: 2500           # a fast-track assignment for a claim estimated above this waits for the team lead
+  referral_expected_recovery_usd: 3000    # a subrogation referral expected to recover more than this waits for the team lead
   reviews: never                          # leakage reviews are below every threshold
 execution:
   mode: dry-run               # the live executor (claims system) is not implemented
