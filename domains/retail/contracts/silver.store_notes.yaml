@@ -1,0 +1,27 @@
+# Data contract: retail.silver.store_notes (owner: store-operations). Validated by adl.core.contracts in CI.
+id: retail.silver.store_notes
+version: 1.0.0
+domain: retail
+layer: silver
+table: store_notes
+kind: conformed
+status: built
+description: Store-manager notes with personal data redacted and a prompt-injection screen result per note.
+owner: {team: store-operations, steward: Store operations data steward, contact: store-ops-data@wrenfield.example}
+classification: internal
+schema:
+- {name: note_id, type: string, nullable: false}
+- {name: store_id, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: author_role, type: string, nullable: false}
+- {name: text_redacted, type: string, nullable: false}
+- {name: injection_flag, type: bool, nullable: false}
+- {name: pii_redacted, type: bool, nullable: false}
+primary_key: [note_id]
+quality:
+- check: unique
+  columns: [note_id]
+- {check: referential, column: store_id, ref: retail.silver.stores.store_id}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.store_notes]
+agent_exposed: false

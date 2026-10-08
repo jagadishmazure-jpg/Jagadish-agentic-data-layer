@@ -1,0 +1,25 @@
+# Data contract: retail.silver.loyalty_visits (owner: loyalty-crm). Validated by adl.core.contracts in CI.
+id: retail.silver.loyalty_visits
+version: 1.0.0
+domain: retail
+layer: silver
+table: loyalty_visits
+kind: conformed
+status: built
+description: 'Loyalty visits by pseudonymised customer: store, day and basket value.'
+owner: {team: loyalty-crm, steward: Customer data steward (privacy office), contact: privacy@wrenfield.example}
+classification: confidential
+schema:
+- {name: customer_key, type: string, nullable: false}
+- {name: store_id, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: basket_usd, type: float, nullable: false}
+primary_key: [customer_key, day]
+quality:
+- {check: range, column: basket_usd, min: 0}
+- {check: referential, column: store_id, ref: retail.silver.stores.store_id}
+- {check: referential, column: customer_key, ref: retail.silver.loyalty_customers.customer_key}
+- {check: freshness, column: day}
+slo: {completeness_pct: 99.9, freshness_days: 2, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.loyalty_visits, retail.silver.loyalty_customers]
+agent_exposed: false

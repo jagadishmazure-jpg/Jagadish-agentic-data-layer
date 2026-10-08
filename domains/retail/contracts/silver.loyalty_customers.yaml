@@ -1,0 +1,26 @@
+# Data contract: retail.silver.loyalty_customers (owner: loyalty-crm). Validated by adl.core.contracts in CI.
+id: retail.silver.loyalty_customers
+version: 1.0.0
+domain: retail
+layer: silver
+table: loyalty_customers
+kind: conformed
+status: built
+description: 'Pseudonymised loyalty members: a keyed hash replaces the customer id, the postcode is cut to its district and no name, e-mail or
+  phone is kept.'
+owner: {team: loyalty-crm, steward: Customer data steward (privacy office), contact: privacy@wrenfield.example}
+classification: confidential
+schema:
+- {name: customer_key, type: string, nullable: false, description: HMAC-SHA256 of the customer id with a key held by the privacy office}
+- {name: postcode_district, type: string, nullable: false}
+- {name: home_store, type: string, nullable: false}
+- {name: joined_day, type: int, nullable: false}
+primary_key: [customer_key]
+quality:
+- check: unique
+  columns: [customer_key]
+- {check: regex, column: customer_key, pattern: '[0-9a-f]{16}'}
+- {check: referential, column: home_store, ref: retail.silver.stores.store_id}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.loyalty_customers]
+agent_exposed: false

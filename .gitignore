@@ -1,0 +1,26 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env
+*.egg-info/
+build/
+dist/
+*.pdf
+refs/
+out/
+evidence/*.json
+evidence/*.jsonl
+!evidence/README.md
+sbom*.json
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+backend_override.tf
+out/

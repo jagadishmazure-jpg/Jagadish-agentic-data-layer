@@ -1,0 +1,24 @@
+# Data contract: retail.silver.prices (owner: merchandising-analytics). Validated by adl.core.contracts in CI.
+id: retail.silver.prices
+version: 1.0.0
+domain: retail
+layer: silver
+table: prices
+kind: conformed
+status: built
+description: Regular shelf price per product and day (list price with list-price changes applied), including planned future days.
+owner: {team: merchandising-analytics, steward: Merchandising data steward, contact: merch-data@wrenfield.example}
+classification: internal
+schema:
+- {name: sku, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: regular_price, type: float, nullable: false}
+primary_key: [sku, day]
+quality:
+- check: unique
+  columns: [sku, day]
+- {check: range, column: regular_price, min: 0.01}
+- {check: referential, column: sku, ref: retail.silver.products.sku}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.products, retail.bronze.price_changes]
+agent_exposed: false

@@ -1,0 +1,33 @@
+# Data contract: retail.gold.supplier_performance (owner: supply-chain-data). Validated by adl.core.contracts in CI.
+id: retail.gold.supplier_performance
+version: 1.0.0
+domain: retail
+layer: gold
+table: supplier_performance
+kind: data_product
+status: built
+description: Realised supplier lead time (mean and 90th percentile), on-time rate and fill rate from receipts.
+owner: {team: supply-chain-data, steward: Supply chain data steward, contact: supply-data@wrenfield.example}
+classification: internal
+schema:
+- {name: supplier_id, type: string, nullable: false}
+- {name: supplier_name, type: string, nullable: false}
+- {name: orders, type: int, nullable: false}
+- {name: nominal_lead_days, type: int, nullable: false}
+- {name: lead_time_mean, type: float, nullable: false}
+- {name: lead_time_p90, type: int, nullable: false}
+- {name: on_time_pct, type: float, nullable: false}
+- {name: fill_rate_pct, type: float, nullable: false}
+primary_key: [supplier_id]
+quality:
+- check: unique
+  columns: [supplier_id]
+- {check: range, column: on_time_pct, min: 0, max: 100}
+- {check: range, column: fill_rate_pct, min: 0, max: 100}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+acceptable_use:
+  allowed_purposes: [replenishment, supplier_management, performance_reporting]
+  prohibited_purposes: [individual_customer_profiling, employee_performance_management, sale_of_data_to_third_parties]
+consumers: ['agent:replenishment', 'job:forecast']
+inputs: [retail.silver.purchase_orders, retail.silver.suppliers]
+agent_exposed: true

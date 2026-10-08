@@ -1,0 +1,63 @@
+# Semantic layer for the retail domain: every KPI is defined once, here, and compiled to SQL by
+# adl.core.semantic. Dashboards, agents (through the gateway), the value case and the docs all use these
+# definitions, so "stockout rate" or "gross margin" cannot mean two different things.
+source: gold.sales_daily
+dimensions:
+  store_id: store_id
+  region: region
+  sku: sku
+  category: category
+  day: day
+  week: "day // 7"
+  promo: promo
+metrics:
+  revenue_usd:
+    sql: sum(revenue_usd)
+    description: Net sales after promotions and markdowns.
+    unit: USD
+    owner: finance-analytics
+  units:
+    sql: sum(units)
+    description: Units sold.
+    unit: units
+    owner: merchandising-analytics
+  stockout_rate_pct:
+    sql: 100.0 * avg(CASE WHEN sold_out THEN 1 ELSE 0 END)
+    description: Share of store-product-days that closed with no stock (sold out).
+    unit: percent
+    owner: supply-chain-data
+  lost_sales_usd:
+    sql: sum(est_lost_sales_usd)
+    description: Estimated sales lost on sold-out days (same-weekday reference of unconstrained days; a conservative estimate).
+    unit: USD
+    owner: merchandising-analytics
+  markdown_usd:
+    sql: sum(markdown_usd)
+    description: Discount given away on marked-down near-date units.
+    unit: USD
+    owner: merchandising-analytics
+  waste_cost_usd:
+    sql: sum(waste_cost_usd)
+    description: Cost of units thrown away because they expired.
+    unit: USD
+    owner: supply-chain-data
+  sell_through_pct:
+    sql: 100.0 * sum(units) / nullif(sum(received_units), 0)
+    description: Units sold as a share of units received.
+    unit: percent
+    owner: merchandising-analytics
+  gross_margin_usd:
+    sql: sum(revenue_usd) - sum(cogs_usd) - sum(waste_cost_usd)
+    description: Revenue minus cost of goods sold minus the cost of waste.
+    unit: USD
+    owner: finance-analytics
+  gross_margin_pct:
+    sql: 100.0 * (sum(revenue_usd) - sum(cogs_usd) - sum(waste_cost_usd)) / nullif(sum(revenue_usd), 0)
+    description: Gross margin after waste as a share of revenue.
+    unit: percent
+    owner: finance-analytics
+  markdown_rate_pct:
+    sql: 100.0 * sum(markdown_usd) / nullif(sum(revenue_usd) + sum(markdown_usd), 0)
+    description: Markdown dollars as a share of sales at shelf price.
+    unit: percent
+    owner: merchandising-analytics

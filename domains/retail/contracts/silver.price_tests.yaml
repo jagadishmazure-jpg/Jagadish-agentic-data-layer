@@ -1,0 +1,28 @@
+# Data contract: retail.silver.price_tests (owner: merchandising-analytics). Validated by adl.core.contracts in CI.
+id: retail.silver.price_tests
+version: 1.0.0
+domain: retail
+layer: silver
+table: price_tests
+kind: conformed
+status: built
+description: 'Store price tests from the test-and-learn programme: a product''s shelf price moved in a few stores for one week. The source of
+  the elasticity estimates.'
+owner: {team: merchandising-analytics, steward: Merchandising data steward, contact: merch-data@wrenfield.example}
+classification: internal
+schema:
+- {name: store_id, type: string, nullable: false}
+- {name: sku, type: string, nullable: false}
+- {name: start_day, type: int, nullable: false}
+- {name: end_day, type: int, nullable: false}
+- {name: multiplier, type: float, nullable: false}
+primary_key: [store_id, sku, start_day]
+quality:
+- check: unique
+  columns: [store_id, sku, start_day]
+- {check: range, column: multiplier, min: 0.5, max: 1.5}
+- {check: referential, column: store_id, ref: retail.silver.stores.store_id}
+- {check: referential, column: sku, ref: retail.silver.products.sku}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.price_tests]
+agent_exposed: false

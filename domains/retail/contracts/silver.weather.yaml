@@ -1,0 +1,24 @@
+# Data contract: retail.silver.weather (owner: data-platform). Validated by adl.core.contracts in CI.
+id: retail.silver.weather
+version: 1.0.0
+domain: retail
+layer: silver
+table: weather
+kind: conformed
+status: built
+description: Daily temperature anomaly and rain flag per region (history plus the forecast window).
+owner: {team: data-platform, steward: Data platform lead, contact: data-platform@wrenfield.example}
+classification: public
+schema:
+- {name: region, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: temp_anomaly_c, type: float, nullable: false}
+- {name: rain, type: bool, nullable: false}
+primary_key: [region, day]
+quality:
+- check: unique
+  columns: [region, day]
+- {check: range, column: temp_anomaly_c, min: -25, max: 25}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.weather]
+agent_exposed: false

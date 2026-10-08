@@ -1,0 +1,53 @@
+# Data contract: retail.gold.sales_daily (owner: merchandising-analytics). Validated by adl.core.contracts in CI.
+id: retail.gold.sales_daily
+version: 1.0.0
+domain: retail
+layer: gold
+table: sales_daily
+kind: data_product
+status: built
+description: Sales, stock, waste and estimated lost sales per store, product and day. The single source for every retail metric.
+owner: {team: merchandising-analytics, steward: Merchandising data steward, contact: merch-data@wrenfield.example}
+classification: internal
+schema:
+- {name: store_id, type: string, nullable: false}
+- {name: region, type: string, nullable: false}
+- {name: sku, type: string, nullable: false}
+- {name: category, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: units, type: int, nullable: false}
+- {name: revenue_usd, type: float, nullable: false}
+- {name: shelf_price, type: float, nullable: false}
+- {name: regular_price, type: float, nullable: false}
+- {name: promo, type: bool, nullable: false}
+- {name: markdown_units, type: int, nullable: false}
+- {name: markdown_usd, type: float, nullable: false}
+- {name: waste_units, type: int, nullable: false}
+- {name: waste_cost_usd, type: float, nullable: false}
+- {name: cogs_usd, type: float, nullable: false}
+- {name: on_hand_end, type: int, nullable: false}
+- {name: sold_out, type: bool, nullable: false}
+- {name: est_lost_units, type: float, nullable: false, description: 'estimated unmet demand on sold-out days: same-weekday mean of the previous
+    four unconstrained weeks minus units sold'}
+- {name: est_lost_sales_usd, type: float, nullable: false}
+- {name: received_units, type: int, nullable: false}
+primary_key: [store_id, sku, day]
+quality:
+- check: unique
+  columns: [store_id, sku, day]
+- {check: range, column: units, min: 0}
+- {check: range, column: est_lost_units, min: 0}
+- check: accepted_values
+  column: region
+  values: [north, south]
+- {check: referential, column: store_id, ref: retail.silver.stores.store_id}
+- {check: referential, column: sku, ref: retail.silver.products.sku}
+- {check: freshness, column: day}
+- {check: row_count_min, value: 50000}
+slo: {completeness_pct: 99.9, freshness_days: 1, max_quarantine_pct: 1.0}
+acceptable_use:
+  allowed_purposes: [replenishment, markdown_optimisation, store_operations, performance_reporting, demand_forecasting, value_reporting]
+  prohibited_purposes: [individual_customer_profiling, employee_performance_management, sale_of_data_to_third_parties]
+consumers: ['agent:replenishment', 'agent:markdown', 'agent:store-copilot-north', 'agent:store-copilot-south', 'job:forecast', metrics layer]
+inputs: [retail.silver.pos_sales, retail.silver.inventory, retail.silver.products, retail.silver.stores, retail.silver.prices, retail.silver.purchase_orders]
+agent_exposed: true

@@ -1,0 +1,33 @@
+# Retrieval evaluation set: questions an agent or store manager asks, with the documents that answer
+# them. Written by the same author as the corpus, so scores are optimistic; see docs/components/knowledge-graphrag.md.
+questions:
+  - {id: Q01, q: "What lead time should we plan for Copperleaf Produce?", relevant: [SUP-CP, REV-COPPERLEAF-LATE]}
+  - {id: Q02, q: "Why does Ashby Cross keep running out of spinach?", relevant: [STORE-S03, REV-COPPERLEAF-LATE, SUP-CP]}
+  - {id: Q03, q: "How deep can a markdown go without approval?", relevant: [POL-MARKDOWN, POL-APPROVAL]}
+  - {id: Q04, q: "Why is bakery waste high at Kestrel Park?", relevant: [REV-BAKERY-WASTE, STORE-S04]}
+  - {id: Q05, q: "What happened during the harbour festival?", relevant: [REV-FESTIVAL, STORE-S01]}
+  - {id: Q06, q: "Can stock move between stores?", relevant: [POL-TRANSFER]}
+  - {id: Q07, q: "Who supplies pasta and how reliable are they?", relevant: [SUP-NF, REV-SHORTSHIP]}
+  - {id: Q08, q: "How should we order ice cream in warm weather?", relevant: [CAT-FROZEN, SUP-NF, STORE-S05]}
+  - {id: Q09, q: "Can agents use loyalty data about individual shoppers?", relevant: [POL-DATA-USE]}
+  - {id: Q10, q: "How many days can sourdough be sold?", relevant: [POL-DATECODE, CAT-BAKERY]}
+  - {id: Q11, q: "What is the approval threshold for purchase orders?", relevant: [POL-REPLEN, POL-APPROVAL]}
+  - {id: Q12, q: "Which supplier delivers chicken and are they late?", relevant: [SUP-AR]}
+  - {id: Q13, q: "Why did Fenwick throw away strawberries?", relevant: [REV-HEAT, STORE-S08]}
+  - {id: Q14, q: "How do school fairs affect Oakhurst?", relevant: [STORE-S07]}
+  - {id: Q15, q: "Should milk have a safety buffer?", relevant: [CAT-DAIRY]}
+  - {id: Q16, q: "What causes pantry stockouts during promotions?", relevant: [CAT-PANTRY]}
+  - {id: Q17, q: "How is gross margin defined?", relevant: [KPI-DEFS]}
+  - {id: Q18, q: "What should we do about Northpoint short shipments?", relevant: [REV-SHORTSHIP, SUP-NF]}
+  - {id: Q19, q: "Is Ridgeway Farms reliable?", relevant: [SUP-RF]}
+  - {id: Q20, q: "Which store has a backup generator?", relevant: [STORE-S06]}
+  - {id: Q21, q: "How should we handle romaine gaps in the north?", relevant: [SUP-CP, REV-COPPERLEAF-LATE, STORE-S03]}
+  - {id: Q22, q: "What should Harbour do about chicken on event days?", relevant: [REV-FESTIVAL, CAT-MEAT, STORE-S01]}
+  - {id: Q23, q: "Why are croissants wasted in small stores?", relevant: [CAT-BAKERY, SUP-HB, REV-BAKERY-WASTE]}
+  - {id: Q24, q: "Will frozen deliveries be slower over the holiday?", relevant: [MSG-NF-1, SUP-NF]}
+  - {id: Q25, q: "Do salads spoil faster in hot weather?", relevant: [CAT-PRODUCE, REV-HEAT]}
+  - {id: Q26, q: "What does the stockout rate measure?", relevant: [KPI-DEFS]}
+  - {id: Q27, q: "Who approves cross-region transfers?", relevant: [POL-TRANSFER]}
+  - {id: Q28, q: "Which store sells the most frozen pizza?", relevant: [STORE-S05]}
+  - {id: Q29, q: "Is the yoghurt supplier reliable?", relevant: [SUP-MD]}
+  - {id: Q30, q: "What changed in the markdown rule?", relevant: [POL-MARKDOWN]}

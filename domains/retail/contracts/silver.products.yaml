@@ -1,0 +1,33 @@
+# Data contract: retail.silver.products (owner: merchandising-analytics). Validated by adl.core.contracts in CI.
+id: retail.silver.products
+version: 1.0.0
+domain: retail
+layer: silver
+table: products
+kind: conformed
+status: built
+description: 'Product master: one row per product with category, list price, unit cost, supplier, case pack and shelf life.'
+owner: {team: merchandising-analytics, steward: Merchandising data steward, contact: merch-data@wrenfield.example}
+classification: internal
+schema:
+- {name: sku, type: string, nullable: false}
+- {name: name, type: string, nullable: false}
+- {name: category, type: string, nullable: false}
+- {name: list_price, type: float, nullable: false}
+- {name: unit_cost, type: float, nullable: false}
+- {name: supplier_id, type: string, nullable: false}
+- {name: case_pack, type: int, nullable: false}
+- {name: shelf_life_days, type: int, nullable: false, description: 0 means the product does not expire within the planning horizon}
+primary_key: [sku]
+quality:
+- check: unique
+  columns: [sku]
+- check: accepted_values
+  column: category
+  values: [produce, dairy, bakery, meat, frozen, pantry]
+- {check: range, column: list_price, min: 0.01}
+- {check: range, column: case_pack, min: 1}
+- {check: referential, column: supplier_id, ref: retail.silver.suppliers.supplier_id}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.products]
+agent_exposed: false

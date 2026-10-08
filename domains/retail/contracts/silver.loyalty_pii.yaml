@@ -1,0 +1,24 @@
+# Data contract: retail.silver.loyalty_pii (owner: loyalty-crm). Validated by adl.core.contracts in CI.
+id: retail.silver.loyalty_pii
+version: 1.0.0
+domain: retail
+layer: silver
+table: loyalty_pii
+kind: conformed
+status: built
+description: 'Direct identifiers of loyalty members, split from everything else. Restricted: no agent identity and no data product can read it.'
+owner: {team: loyalty-crm, steward: Customer data steward (privacy office), contact: privacy@wrenfield.example}
+classification: restricted
+schema:
+- {name: customer_key, type: string, nullable: false}
+- {name: full_name, type: string, nullable: false, pii: true}
+- {name: email, type: string, nullable: false, pii: true}
+- {name: phone, type: string, nullable: false, pii: true}
+- {name: postcode, type: string, nullable: false, pii: true}
+primary_key: [customer_key]
+quality:
+- check: unique
+  columns: [customer_key]
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.loyalty_customers]
+agent_exposed: false

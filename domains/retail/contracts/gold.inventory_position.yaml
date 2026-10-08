@@ -1,0 +1,38 @@
+# Data contract: retail.gold.inventory_position (owner: supply-chain-data). Validated by adl.core.contracts in CI.
+id: retail.gold.inventory_position
+version: 1.0.0
+domain: retail
+layer: gold
+table: inventory_position
+kind: data_product
+status: built
+description: 'Stock position per store and product at the as-of day: on hand, on order, near-expiry units and days of cover.'
+owner: {team: supply-chain-data, steward: Supply chain data steward, contact: supply-data@wrenfield.example}
+classification: internal
+schema:
+- {name: store_id, type: string, nullable: false}
+- {name: region, type: string, nullable: false}
+- {name: sku, type: string, nullable: false}
+- {name: category, type: string, nullable: false}
+- {name: as_of_day, type: int, nullable: false}
+- {name: on_hand, type: int, nullable: false}
+- {name: on_order, type: int, nullable: false}
+- {name: near_expiry_units, type: int, nullable: false}
+- {name: avg_daily_units_28d, type: float, nullable: false}
+- {name: days_of_cover, type: float, nullable: false}
+primary_key: [store_id, sku]
+quality:
+- check: unique
+  columns: [store_id, sku]
+- {check: range, column: on_hand, min: 0}
+- {check: range, column: on_order, min: 0}
+- {check: referential, column: store_id, ref: retail.silver.stores.store_id}
+- {check: referential, column: sku, ref: retail.silver.products.sku}
+- {check: freshness, column: as_of_day}
+slo: {completeness_pct: 100, freshness_days: 1, max_quarantine_pct: 1.0}
+acceptable_use:
+  allowed_purposes: [replenishment, markdown_optimisation, store_operations]
+  prohibited_purposes: [individual_customer_profiling, employee_performance_management, sale_of_data_to_third_parties]
+consumers: ['agent:replenishment', 'agent:markdown', 'agent:store-copilot-north', 'agent:store-copilot-south']
+inputs: [retail.silver.inventory, retail.silver.purchase_orders, retail.silver.pos_sales, retail.silver.products, retail.silver.stores]
+agent_exposed: true

@@ -1,0 +1,22 @@
+# Decision policy for the replenishment and markdown agents. Code reads this file; agents cannot change it.
+replenishment:
+  service_z:            # safety stock in standard deviations of demand over lead time + review
+    perishable: 0.0     # chosen on the tuning seeds (adl tune), never on the reported seeds
+    non_perishable: 1.65
+  review_days: 1        # orders are placed every evening
+  lead_time: p90        # plan with the supplier's realised 90th-percentile lead time (gold.supplier_performance)
+  cap_perishable_to_shelf_life: true
+markdown:
+  max_discount: 0.3     # deeper markdowns lost margin on the tuning seeds (adl tune)
+  grid_step: 0.1
+transfers:
+  enabled: true
+  min_units: 2
+  same_region_only: true
+approval:               # anything above a threshold waits for a named person; everything is dry-run
+  po_value_usd: 250     # purchase order line value at cost
+  markdown_discount: 0.20  # deeper than 20% waits for the store manager
+  transfer_units: 24
+  cross_region_transfer: always
+execution:
+  mode: dry-run         # the live executor is not implemented

@@ -1,0 +1,37 @@
+# Data contract: retail.silver.purchase_orders (owner: supply-chain-data). Validated by adl.core.contracts in CI.
+id: retail.silver.purchase_orders
+version: 1.0.0
+domain: retail
+layer: silver
+table: purchase_orders
+kind: conformed
+status: built
+description: 'Purchase orders with the receipt: realised lead time, on-time flag and fill rate per order.'
+owner: {team: supply-chain-data, steward: Supply chain data steward, contact: supply-data@wrenfield.example}
+classification: internal
+schema:
+- {name: po_id, type: string, nullable: false}
+- {name: store_id, type: string, nullable: false}
+- {name: sku, type: string, nullable: false}
+- {name: supplier_id, type: string, nullable: false}
+- {name: order_day, type: int, nullable: false}
+- {name: qty_ordered, type: int, nullable: false}
+- {name: expected_day, type: int, nullable: false}
+- {name: received_day, type: int, nullable: true, description: null while the order is still open at the as-of day}
+- {name: qty_received, type: int, nullable: true}
+- {name: lead_time_days, type: int, nullable: true}
+- {name: on_time, type: bool, nullable: true}
+- {name: fill_rate, type: float, nullable: true}
+primary_key: [po_id]
+quality:
+- check: unique
+  columns: [po_id]
+- {check: range, column: qty_ordered, min: 1}
+- {check: range, column: fill_rate, min: 0, max: 1}
+- {check: referential, column: store_id, ref: retail.silver.stores.store_id}
+- {check: referential, column: sku, ref: retail.silver.products.sku}
+- {check: referential, column: supplier_id, ref: retail.silver.suppliers.supplier_id}
+- {check: freshness, column: order_day}
+slo: {completeness_pct: 99.9, freshness_days: 1, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.purchase_orders]
+agent_exposed: false

@@ -1,0 +1,30 @@
+# Data contract: retail.gold.promo_plan (owner: merchandising-analytics). Validated by adl.core.contracts in CI.
+id: retail.gold.promo_plan
+version: 1.0.0
+domain: retail
+layer: gold
+table: promo_plan
+kind: data_product
+status: built
+description: Promotions planned or running, per product, with the promoted price ratio.
+owner: {team: merchandising-analytics, steward: Merchandising data steward, contact: merch-data@wrenfield.example}
+classification: internal
+schema:
+- {name: sku, type: string, nullable: false}
+- {name: category, type: string, nullable: false}
+- {name: start_day, type: int, nullable: false}
+- {name: end_day, type: int, nullable: false}
+- {name: price_ratio, type: float, nullable: false}
+- {name: display, type: bool, nullable: false}
+primary_key: [sku, start_day]
+quality:
+- check: unique
+  columns: [sku, start_day]
+- {check: referential, column: sku, ref: retail.silver.products.sku}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+acceptable_use:
+  allowed_purposes: [replenishment, markdown_optimisation, demand_forecasting, store_operations]
+  prohibited_purposes: [individual_customer_profiling, employee_performance_management, sale_of_data_to_third_parties]
+consumers: ['agent:replenishment', 'agent:markdown', 'job:forecast']
+inputs: [retail.silver.promotions, retail.silver.products]
+agent_exposed: true

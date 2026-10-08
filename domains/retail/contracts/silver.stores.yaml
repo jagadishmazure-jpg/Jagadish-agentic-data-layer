@@ -1,0 +1,26 @@
+# Data contract: retail.silver.stores (owner: store-operations). Validated by adl.core.contracts in CI.
+id: retail.silver.stores
+version: 1.0.0
+domain: retail
+layer: silver
+table: stores
+kind: conformed
+status: built
+description: 'Store master: store id, name, region and relative size.'
+owner: {team: store-operations, steward: Store operations data steward, contact: store-ops-data@wrenfield.example}
+classification: internal
+schema:
+- {name: store_id, type: string, nullable: false}
+- {name: name, type: string, nullable: false}
+- {name: region, type: string, nullable: false}
+- {name: size_factor, type: float, nullable: false}
+primary_key: [store_id]
+quality:
+- check: unique
+  columns: [store_id]
+- check: accepted_values
+  column: region
+  values: [north, south]
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.stores]
+agent_exposed: false

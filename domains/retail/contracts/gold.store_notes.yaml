@@ -1,0 +1,33 @@
+# Data contract: retail.gold.store_notes (owner: store-operations). Validated by adl.core.contracts in CI.
+id: retail.gold.store_notes
+version: 1.0.0
+domain: retail
+layer: gold
+table: store_notes
+kind: data_product
+status: built
+description: 'Store-manager notes for agents: personal data redacted, prompt-injection attempts flagged; agents receive the text quoted as untrusted
+  data.'
+owner: {team: store-operations, steward: Store operations data steward, contact: store-ops-data@wrenfield.example}
+classification: internal
+schema:
+- {name: note_id, type: string, nullable: false}
+- {name: store_id, type: string, nullable: false}
+- {name: region, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: author_role, type: string, nullable: false}
+- {name: text_redacted, type: string, nullable: false}
+- {name: injection_flag, type: bool, nullable: false}
+primary_key: [note_id]
+quality:
+- check: unique
+  columns: [note_id]
+- {check: referential, column: store_id, ref: retail.silver.stores.store_id}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+acceptable_use:
+  allowed_purposes: [store_operations, replenishment, markdown_optimisation]
+  prohibited_purposes: [individual_customer_profiling, employee_performance_management, sale_of_data_to_third_parties]
+consumers: ['agent:replenishment', 'agent:store-copilot-north', 'agent:store-copilot-south']
+inputs: [retail.silver.store_notes, retail.silver.stores]
+agent_exposed: true
+text_fields: [text_redacted]

@@ -1,0 +1,33 @@
+# Data contract: retail.gold.customer_segments (owner: loyalty-crm). Validated by adl.core.contracts in CI.
+id: retail.gold.customer_segments
+version: 1.0.0
+domain: retail
+layer: gold
+table: customer_segments
+kind: data_product
+status: built
+description: Aggregated loyalty segments per store. Groups with fewer than ten members are suppressed (k-anonymity), so no row describes a person.
+owner: {team: loyalty-crm, steward: Customer data steward (privacy office), contact: privacy@wrenfield.example}
+classification: internal
+schema:
+- {name: store_id, type: string, nullable: false}
+- {name: segment, type: string, nullable: false}
+- {name: members, type: int, nullable: false}
+- {name: visits, type: int, nullable: false}
+- {name: avg_basket_usd, type: float, nullable: false}
+primary_key: [store_id, segment]
+quality:
+- check: unique
+  columns: [store_id, segment]
+- {check: range, column: members, min: 10}
+- check: accepted_values
+  column: segment
+  values: [weekly regular, occasional, lapsed]
+- {check: referential, column: store_id, ref: retail.silver.stores.store_id}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+acceptable_use:
+  allowed_purposes: [performance_reporting, customer_insight_aggregate, store_operations]
+  prohibited_purposes: [individual_customer_profiling, employee_performance_management, sale_of_data_to_third_parties, price_discrimination_by_customer]
+consumers: ['agent:insights']
+inputs: [retail.silver.loyalty_customers, retail.silver.loyalty_visits]
+agent_exposed: true

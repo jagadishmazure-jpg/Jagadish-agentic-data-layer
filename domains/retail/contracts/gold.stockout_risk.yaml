@@ -1,0 +1,37 @@
+# Data contract: retail.gold.stockout_risk (owner: supply-chain-data). Validated by adl.core.contracts in CI.
+id: retail.gold.stockout_risk
+version: 1.0.0
+domain: retail
+layer: gold
+table: stockout_risk
+kind: insight_product
+status: built
+description: Probability that each store-product sells out within the next three days given stock, inbound orders and the forecast.
+owner: {team: supply-chain-data, steward: Supply chain data steward, contact: supply-data@wrenfield.example}
+classification: internal
+schema:
+- {name: store_id, type: string, nullable: false}
+- {name: region, type: string, nullable: false}
+- {name: sku, type: string, nullable: false}
+- {name: horizon_days, type: int, nullable: false}
+- {name: available_units, type: float, nullable: false}
+- {name: expected_demand, type: float, nullable: false}
+- {name: probability, type: float, nullable: false}
+- {name: risk_band, type: string, nullable: false}
+primary_key: [store_id, sku]
+quality:
+- check: unique
+  columns: [store_id, sku]
+- {check: range, column: probability, min: 0, max: 1}
+- check: accepted_values
+  column: risk_band
+  values: [low, medium, high]
+- {check: referential, column: store_id, ref: retail.silver.stores.store_id}
+- {check: referential, column: sku, ref: retail.silver.products.sku}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+acceptable_use:
+  allowed_purposes: [replenishment, store_operations]
+  prohibited_purposes: [individual_customer_profiling, employee_performance_management, sale_of_data_to_third_parties]
+consumers: ['agent:replenishment', 'agent:store-copilot-north', 'agent:store-copilot-south']
+inputs: [retail.gold.demand_forecast, retail.gold.inventory_position]
+agent_exposed: true

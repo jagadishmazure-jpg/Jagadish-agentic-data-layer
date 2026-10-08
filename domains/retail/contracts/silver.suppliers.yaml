@@ -1,0 +1,24 @@
+# Data contract: retail.silver.suppliers (owner: supply-chain-data). Validated by adl.core.contracts in CI.
+id: retail.silver.suppliers
+version: 1.0.0
+domain: retail
+layer: silver
+table: suppliers
+kind: conformed
+status: built
+description: 'Supplier master: id, name, categories supplied and the contractual (nominal) lead time.'
+owner: {team: supply-chain-data, steward: Supply chain data steward, contact: supply-data@wrenfield.example}
+classification: internal
+schema:
+- {name: supplier_id, type: string, nullable: false}
+- {name: name, type: string, nullable: false}
+- {name: categories, type: string, nullable: false}
+- {name: nominal_lead_days, type: int, nullable: false}
+primary_key: [supplier_id]
+quality:
+- check: unique
+  columns: [supplier_id]
+- {check: range, column: nominal_lead_days, min: 0, max: 30}
+slo: {completeness_pct: 100, freshness_days: 9999, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.suppliers]
+agent_exposed: false

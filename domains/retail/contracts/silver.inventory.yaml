@@ -1,0 +1,30 @@
+# Data contract: retail.silver.inventory (owner: supply-chain-data). Validated by adl.core.contracts in CI.
+id: retail.silver.inventory
+version: 1.0.0
+domain: retail
+layer: silver
+table: inventory
+kind: conformed
+status: built
+description: End-of-day stock per store and product, with units thrown away (expired) and units on their last sellable day tomorrow.
+owner: {team: supply-chain-data, steward: Supply chain data steward, contact: supply-data@wrenfield.example}
+classification: internal
+schema:
+- {name: store_id, type: string, nullable: false}
+- {name: sku, type: string, nullable: false}
+- {name: day, type: int, nullable: false}
+- {name: on_hand_end, type: int, nullable: false}
+- {name: waste_units, type: int, nullable: false}
+- {name: near_expiry_units, type: int, nullable: false}
+primary_key: [store_id, sku, day]
+quality:
+- check: unique
+  columns: [store_id, sku, day]
+- {check: range, column: on_hand_end, min: 0}
+- {check: range, column: waste_units, min: 0}
+- {check: referential, column: store_id, ref: retail.silver.stores.store_id}
+- {check: referential, column: sku, ref: retail.silver.products.sku}
+- {check: freshness, column: day}
+slo: {completeness_pct: 99.9, freshness_days: 1, max_quarantine_pct: 1.0}
+inputs: [retail.bronze.inventory_snapshots]
+agent_exposed: false
