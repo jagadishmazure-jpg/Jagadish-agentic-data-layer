@@ -144,7 +144,7 @@ domain      status   contracts  silver  gold  agent-exposed  with PII  quality c
 ----------  -------  ---------  ------  ----  -------------  --------  --------------
 retail      built    25         15      10    10             1         93
 mortgage    built    15         10      5     5              1         55
-insurance   planned  3          1       2     2              1         3
+insurance   built    18         11      7     7              1         68
 healthcare  planned  3          1       2     2              1         3
 
 all contracts valid: True

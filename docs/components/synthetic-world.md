@@ -116,7 +116,7 @@ domain      status   fictional organisation  use case                   contract
 ----------  -------  ----------------------  -------------------------  ---------  ------------------------------------------------------
 retail      built    Wrenfield Grocers       stockouts and markdown     25         purchase orders, inter-store transfers, markdowns
 mortgage    built    Quillmere Home Loans    loan pipeline and fallout  15         borrower outreach, lock extension, document chase
-insurance   planned  Ferrowind Insurance     claims triage and leakage  3          queue assignment, leakage review, subrogation referral
+insurance   built    Ferrowind Insurance     claims triage and leakage  18         queue assignment, leakage review, subrogation referral
 healthcare  planned  Halsey Vale Health      inpatient fall risk        3          bed alarm, hourly rounding, mobility support
 ```
 <!-- /output -->
