@@ -4,7 +4,8 @@ An agent-ready data layer for one business decision, built end to end and measur
 a bronze/silver/gold lakehouse, governed metrics, forecasting and risk models, a knowledge graph, a
 data gateway that AI agents must go through (exposed over MCP and A2A), a Microsoft Agent Framework
 workflow with human approval, and a value ledger that says what the agents are worth after their own
-cost. The first domain is retail, for **Wrenfield Grocers**, a fictional eight-store grocer.
+cost. The first domain is retail, for **Wrenfield Grocers**, a fictional eight-store grocer. The second
+is mortgage, for **Quillmere Home Loans**, a fictional six-branch lender, built on the same platform.
 
 The structure follows the MIT Sloan article
 [What leaders still get wrong about AI](https://mitsloan.mit.edu/ideas-made-to-matter/what-leaders-still-get-wrong-about-ai)
@@ -30,10 +31,15 @@ is gated off.
   sales 37.6%, markdown spend 44.2% and waste 53.7%. They **miss** the stockout-rate target (-1.2%
   against -20%), and that miss is reported, not hidden. Estimated AI and platform cost is $76 per 28
   days at assumed rates.
-* **Safety:** 14 of 14 access attacks stopped, 0 personal-data rows in anything an agent can read, a
+* **Second domain, mortgage (also simulated):** a rate-lock fallout model that beats today's "call
+  whoever is closest to expiry" rule (AUC 0.730 against 0.462) and an assistant that adds **$193,003
+  net value** per 28 days (95% interval $171,585 to $214,486). It meets **1 of 4** KPI targets
+  (fallout -14.9% against -12%) and misses pull-through, extension cost and cycle time; see
+  [docs/mortgage](docs/mortgage/README.md).
+* **Safety:** in each domain 14 of 14 access attacks stopped, 0 personal-data rows in anything an agent can read, a
   hash-chained audit log that detects tampering, and no injected instruction ever executed in any of
   4 defence configurations.
-* **Quality:** **390 automated tests**, a 15-check release gate, ruff, CodeQL, gitleaks, an SBOM,
+* **Quality:** **473 automated tests**, a 26-check release gate (15 retail, 11 mortgage), ruff, CodeQL, gitleaks, an SBOM,
   checkov, tflint and Terraform tests on every push.
 * **Stack:** Python 3.13, DuckDB, Delta Lake, Microsoft Agent Framework, MCP, A2A, Terraform, Bicep,
   GitHub Actions with OIDC.
@@ -43,14 +49,16 @@ is gated off.
 | Area | Status | Where |
 |---|---|---|
 | Retail domain (Wrenfield Grocers): 25 contracts, pipeline, models, agents, value ledger | **Built**, runs offline | `src/adl/domains/retail/` |
-| Mortgage (Quillmere Home Loans), insurance (Ferrowind Insurance), healthcare (Halsey Vale Health) | **Planned**: use case, KPIs, levers and 3 contracts each; no pipeline | `domains/<name>/` |
+| Mortgage domain (Quillmere Home Loans): 15 contracts, pipeline, fallout model, agents, value ledger | **Built**, runs offline; in-process gateway only (no MCP or A2A yet) | `src/adl/domains/mortgage/`, [docs/mortgage](docs/mortgage/README.md) |
+| Shared approval workflow and FOCUS cost module used by mortgage | **Built** | `src/adl/core/agentflow.py`, `src/adl/core/finops.py` |
+| Insurance (Ferrowind Insurance), healthcare (Halsey Vale Health) | **Planned**: use case, KPIs, levers and 3 contracts each; no pipeline | `domains/<name>/` |
 | Local storage (Delta Lake + DuckDB) | **Built**, the only adapter run end to end | `src/adl/storage/local.py` |
 | Fabric OneLake, Azure Databricks, BigQuery, S3 + Glue + Athena adapters | **Written, not run** against a real account; tested with fake clients | `src/adl/storage/` |
 | Azure AI Search knowledge adapter, Foundry model client, Prompt Shields request | **Written, not run**; the offline index, mock model and regex screen are used | `src/adl/knowledge/`, `src/adl/core/` |
 | MCP server and A2A endpoint | **Built**, exercised in-memory; not hosted | `src/adl/serve/` |
 | Terraform (Azure, GCP, AWS) and Bicep | **Written, not run**: validate, test, lint and checkov in CI; never applied | `infra/` |
 | Deploy and teardown workflows with OIDC | **Written, not run**: gated by `DEPLOY_ENABLED`, which is off | `.github/workflows/` |
-| Live executor (ERP orders, shelf prices), Microsoft Purview registration | **Planned** | [docs/roadmap.md](docs/roadmap.md) |
+| Live executor (ERP orders, shelf prices, loan origination system), Microsoft Purview registration | **Planned** | [docs/roadmap.md](docs/roadmap.md) |
 
 The four organisations are fictional; any resemblance to a real company is accidental. No real
 employer or client data or name is used anywhere.
@@ -103,10 +111,11 @@ sit side by side.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-adl domains        # four domains, one built
+adl domains        # four domains, two built
 adl run            # bronze -> silver -> gold, quality per product
 adl value          # the value ledger with intervals, KPI targets, cost per outcome
-adl gate           # the 15-check release gate
+adl mortgage value # the mortgage value ledger (adl mortgage --help lists every step)
+adl gate           # the 26-check release gate for both domains
 pytest -q          # the full test suite
 ```
 
@@ -116,31 +125,52 @@ No cloud account, API key or network access is needed. A full `adl value` run to
 
 <!-- output: gate -->
 ```text
-check                                                     result  detail
---------------------------------------------------------  ------  ------------------------
-contracts valid (all domains)                             pass    34 contracts
-every built product passes its contract                   pass    25/25
-lineage events valid                                      pass    78 events
-forecast beats both naive baselines                       pass    WAPE 31.9%
-stockout model beats the cover rule on F1                 pass    F1 39.8% vs 25.8%
-hybrid retrieval recall@5 >= 0.90                         pass    0.972
-every access attack stopped                               pass    14/14
-no PII in agent-exposed products                          pass    0 rows
-audit chain verifies and detects tampering                pass    14 records verified
-no injected action ever executed                          pass    4 configurations
-with both defences nothing injected reaches the approver  pass    quoting on, validator on
-nothing above a threshold executed without a person       pass    0 violations
-net value interval above zero                             pass    [$9,531, $9,830]
-KPI targets reported (hit or miss)                        pass    4/5 met
-cloud adapters secretless                                 pass    4 adapters
+check                                                                 result  detail
+--------------------------------------------------------------------  ------  ------------------------
+retail: contracts valid (all domains)                                 pass    46 contracts
+retail: every built product passes its contract                       pass    25/25
+retail: lineage events valid                                          pass    78 events
+retail: forecast beats both naive baselines                           pass    WAPE 31.9%
+retail: stockout model beats the cover rule on F1                     pass    F1 39.8% vs 25.8%
+retail: hybrid retrieval recall@5 >= 0.90                             pass    0.972
+retail: every access attack stopped                                   pass    14/14
+retail: no PII in agent-exposed products                              pass    0 rows
+retail: audit chain verifies and detects tampering                    pass    14 records verified
+retail: no injected action ever executed                              pass    4 configurations
+retail: with both defences nothing injected reaches the approver      pass    quoting on, validator on
+retail: nothing above a threshold executed without a person           pass    0 violations
+retail: net value interval above zero                                 pass    [$9,531, $9,830]
+retail: KPI targets reported (hit or miss)                            pass    4/5 met
+retail: cloud adapters secretless                                     pass    4 adapters
+mortgage: every built product passes its contract                     pass    15/15
+mortgage: lineage events valid                                        pass    50 events
+mortgage: fallout model beats the expiry rule (AUC and precision@60)  pass    AUC 0.730 vs 0.462
+mortgage: hybrid retrieval recall@5 >= 0.90                           pass    0.979
+mortgage: every access attack stopped                                 pass    14/14
+mortgage: no borrower PII in agent-exposed products                   pass    0 rows
+mortgage: audit chain verifies and detects tampering                  pass    14 records verified
+mortgage: no injected action ever executed                            pass    4 configurations
+mortgage: nothing above a threshold executed without a person         pass    0 violations
+mortgage: net value interval above zero                               pass    [$171,585, $214,486]
+mortgage: KPI targets reported (hit or miss)                          pass    1/4 met
 
-release gate: PASS (15/15)
+release gate: PASS (26/26)
 ```
 <!-- /output -->
 
 Every block like this in the docs is produced by `python scripts/render_docs.py` from the real CLI, and
 CI fails if any block is stale, so a number in the docs changes only when the code that produces it
 changes. All numbers: [docs/metrics.md](docs/metrics.md).
+
+## Mortgage in five steps
+
+| Step (MIT CISR) | In this repository | Real number |
+|---|---|---|
+| Collect the right data | 10 source feeds landed as bronze, conformed to 10 silver tables under contract | 51,006 bronze rows; 85 resent stage events removed; 20 rows quarantined |
+| Generate insights | 14-day fallout risk from process signals only; hybrid retrieval | AUC 0.730 vs 0.462 for the expiry rule; 51.6% vs 6.9% of value at risk covered |
+| Take action | Calls, document chases and lock extensions; extensions above $400 wait for the pipeline manager | 133 actions, 7 sent to a person, 2 rejected, 131 dry-run executions |
+| Create value | Paired forward simulation from the real end-of-history pipeline | +$193,003 net value per 28 days, interval [$171,585, $214,486] |
+| Monetise | Value after AI and platform cost; FOCUS cost rows | $0.39 of cost per $1,000 of value; 112 FOCUS rows |
 
 ## What is honest about the numbers
 
@@ -154,6 +184,10 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 * Elasticity estimates from the price tests are 0.20 to 0.63 away from the truth, and bakery is
   under-estimated (-1.17 against -1.80).
 * Inter-store transfers are implemented but none were proposed on the as-of day.
+* Mortgage misses three of four KPI targets: pull-through +2.4% (target +3%), extension cost -6.6%
+  (target -20%) and cycle time -0.6% (target -5%). The targets were written before the results.
+* Mortgage borrower behaviour is a hand-written hazard model; the value is only as good as those
+  assumptions, and no fair-lending outcome test exists yet.
 * Cost uses assumed unit rates in `config/pricing.yaml`, not quotes.
 
 ## Documentation
@@ -165,14 +199,16 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 | Architects and security reviewers | [docs/architecture.md](docs/architecture.md), [docs/threat-model.md](docs/threat-model.md), [docs/data-governance.md](docs/data-governance.md) |
 | Business and value | [docs/value-case.md](docs/value-case.md), [docs/mit-article-mapping.md](docs/mit-article-mapping.md), [docs/ai-business-models.md](docs/ai-business-models.md), [docs/operating-model.md](docs/operating-model.md) |
 | Every component in depth | [docs/components/README.md](docs/components/README.md) and [docs/infra/README.md](docs/infra/README.md) |
+| The mortgage domain | [docs/mortgage/README.md](docs/mortgage/README.md) |
 | Decisions | [docs/adr/README.md](docs/adr/README.md) |
 
 ## Repository layout
 
 | Folder | What it holds |
 |---|---|
-| `src/adl/core/` | Domain-neutral platform: contracts, quality, lineage, metrics layer, guardrails, gateway, audit |
-| `src/adl/domains/retail/` | The built domain: simulator, pipeline, models, agents, value |
+| `src/adl/core/` | Domain-neutral platform: contracts, quality, lineage, metrics layer, guardrails, gateway, audit, approval workflow, FinOps |
+| `src/adl/domains/retail/` | Retail (built): simulator, pipeline, models, agents, value |
+| `src/adl/domains/mortgage/` | Mortgage (built): simulator, pipeline, fallout model, agents, value |
 | `src/adl/knowledge/` | Embeddings, knowledge graph, retrieval, Azure AI Search adapter |
 | `src/adl/serve/` | MCP server and A2A endpoint |
 | `src/adl/storage/` | Local Delta Lake adapter and the four cloud adapters |

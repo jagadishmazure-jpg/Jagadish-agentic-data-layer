@@ -13,4 +13,9 @@ All notable changes to this project are listed here.
 - MCP server and A2A endpoint over the gateway.
 - Storage adapters for OneLake, Databricks, BigQuery and AWS (written, not run) behind one interface.
 - Terraform for Azure, Google Cloud and AWS, Bicep for Azure, hardened workflows; validated in CI, never applied.
-- Release gate and full documentation set; mortgage, insurance and healthcare domains planned.
+- Release gate and full documentation set; insurance and healthcare domains planned.
+- Mortgage domain for the fictional Quillmere Home Loans (built, synthetic): daily lock-pipeline simulator with hidden borrower traits, 10 bronze feeds with planted faults, 15 built contracts, quality, quarantine, lineage and metrics layer.
+- Mortgage fallout-risk model from process signals only, backtested against the "within 10 days of expiry" rule; knowledge corpus with a 24-question retrieval eval.
+- Mortgage pipeline assistant (calls, document chases, lock extensions) with digest-bound approval above a $400 fee and dry-run execution; region row security and denied columns; 14-attempt attack suite.
+- Mortgage value ledger from a paired 30-replication forward simulation with intervals, KPI results (1 of 4 targets met, misses reported), cost per outcome and FOCUS rows; 11 mortgage gate checks, so `adl gate` runs 26.
+- Shared core: domain-neutral approval workflow (`adl.core.agentflow`), FOCUS cost module (`adl.core.finops`) and a configurable gateway row-scope table; retail behaviour unchanged.
