@@ -1,0 +1,59 @@
+# Data contract: insurance.silver.payment_requests (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.payment_requests
+version: 1.0.0
+domain: insurance
+layer: silver
+table: payment_requests
+kind: conformed
+status: built
+description: Proposed payments when a claim's work is finished, with the number of invoices and whether the repairer is in the approved network; negative
+  amounts are quarantined.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: request_id
+  type: string
+  nullable: false
+- name: claim_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: proposed_usd
+  type: float
+  nullable: false
+- name: invoices
+  type: int
+  nullable: false
+- name: network_repairer
+  type: bool
+  nullable: false
+primary_key: &id001
+- request_id
+quality:
+- check: unique
+  columns: *id001
+- check: range
+  column: proposed_usd
+  min: 0
+  max: 10000000
+- check: range
+  column: invoices
+  min: 1
+  max: 50
+- check: referential
+  column: claim_id
+  ref: insurance.silver.claims.claim_id
+- check: freshness
+  column: day
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+  max_quarantine_pct: 1.0
+inputs:
+- insurance.bronze.payment_requests
+- insurance.silver.claims

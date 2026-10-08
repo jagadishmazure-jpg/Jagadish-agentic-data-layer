@@ -1,0 +1,56 @@
+# Data contract: insurance.gold.workload_daily (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.gold.workload_daily
+version: 1.0.0
+domain: insurance
+layer: gold
+table: workload_daily
+kind: data_product
+status: built
+description: Work ready in each queue at the end of each day, in days of the queue's capacity, from the workflow tool's snapshot; the spread is the gap
+  between the fullest and the emptiest queue.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: internal
+schema:
+- name: day
+  type: int
+  nullable: false
+- name: fast_track_days
+  type: float
+  nullable: false
+- name: standard_days
+  type: float
+  nullable: false
+- name: complex_days
+  type: float
+  nullable: false
+- name: spread_days
+  type: float
+  nullable: false
+primary_key: &id001
+- day
+quality:
+- check: unique
+  columns: *id001
+- check: range
+  column: spread_days
+  min: 0
+slo:
+  completeness_pct: 100
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - claims_handling
+  - performance_reporting
+  prohibited_purposes:
+  - claim_denial_without_human_review
+  - underwriting_by_protected_characteristic
+  - sale_of_data_to_third_parties
+consumers:
+- agent:claims-assistant
+- agent:claims-finance
+inputs:
+- insurance.bronze.queue_snapshots
+agent_exposed: true

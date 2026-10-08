@@ -1,0 +1,68 @@
+# Data contract: insurance.gold.fairness_monitor (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.gold.fairness_monitor
+version: 1.0.0
+domain: insurance
+layer: gold
+table: fairness_monitor
+kind: insight_product
+status: built
+description: 'Claim decisions and outcomes by synthetic proxy group over the history (current rules): selection rates for fast track, leakage review and
+  subrogation referral, mean cycle days, and each rate''s ratio to the reference group. Aggregates only.'
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: decision
+  type: string
+  nullable: false
+- name: group_name
+  type: string
+  nullable: false
+- name: eligible
+  type: int
+  nullable: false
+- name: selected
+  type: int
+  nullable: false
+- name: rate
+  type: float
+  nullable: false
+- name: ratio_to_reference
+  type: float
+  nullable: false
+primary_key: &id001
+- decision
+- group_name
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: group_name
+  values:
+  - G1
+  - G2
+- check: range
+  column: rate
+  min: 0
+slo:
+  completeness_pct: 100
+  freshness_days: 30
+acceptable_use:
+  allowed_purposes:
+  - fairness_monitoring
+  prohibited_purposes:
+  - claim_denial_without_human_review
+  - underwriting_by_protected_characteristic
+  - sale_of_data_to_third_parties
+  - targeting_by_group
+consumers:
+- agent:claims-compliance
+inputs:
+- insurance.silver.claims
+- insurance.silver.postcode_groups
+- insurance.silver.queue_assignments
+- insurance.silver.payments
+- insurance.silver.subrogation
+agent_exposed: true

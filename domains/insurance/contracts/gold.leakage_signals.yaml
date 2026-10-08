@@ -1,0 +1,88 @@
+# Data contract: insurance.gold.leakage_signals (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.gold.leakage_signals
+version: 1.0.0
+domain: insurance
+layer: gold
+table: leakage_signals
+kind: insight_product
+status: built
+description: 'Every claim whose work finished yesterday and is waiting for payment: the probability the proposed payment contains an overpayment and the
+  expected amount, and the probability a third party can be recovered from and the expected recovery (logistic models trained on random audits). No claimant
+  identity, postcode or proxy group.'
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: claim_id
+  type: string
+  nullable: false
+- name: office_id
+  type: string
+  nullable: false
+- name: region
+  type: string
+  nullable: false
+- name: line
+  type: string
+  nullable: false
+- name: cause
+  type: string
+  nullable: false
+- name: proposed_usd
+  type: float
+  nullable: false
+- name: leakage_probability
+  type: float
+  nullable: false
+- name: expected_overpayment_usd
+  type: float
+  nullable: false
+- name: leakage_driver
+  type: string
+  nullable: false
+- name: subrogation_probability
+  type: float
+  nullable: false
+- name: expected_recovery_usd
+  type: float
+  nullable: false
+- name: as_of_day
+  type: int
+  nullable: false
+primary_key: &id001
+- claim_id
+quality:
+- check: unique
+  columns: *id001
+- check: range
+  column: leakage_probability
+  min: 0
+  max: 1
+- check: range
+  column: subrogation_probability
+  min: 0
+  max: 1
+slo:
+  completeness_pct: 100
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - claims_quality_review
+  prohibited_purposes:
+  - claim_denial_without_human_review
+  - underwriting_by_protected_characteristic
+  - sale_of_data_to_third_parties
+  notes: Chooses which payments a person reviews and which claims go to the subrogation unit. A signal is not a finding of fraud and must never reduce a
+    payment without a person.
+consumers:
+- agent:claims-assistant
+- agent:office-copilot-east
+- agent:office-copilot-west
+inputs:
+- insurance.silver.claims
+- insurance.silver.payment_requests
+- insurance.silver.queue_assignments
+- insurance.silver.offices
+agent_exposed: true

@@ -1,0 +1,110 @@
+# Data contract: insurance.gold.claims_daily (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.gold.claims_daily
+version: 1.0.0
+domain: insurance
+layer: gold
+table: claims_daily
+kind: data_product
+status: built
+description: Claims per day, region, line and first queue - new, paid, cycle days, reopenings, escalations, reviews, referrals and the random-audit findings
+  - the source of the claims KPIs.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: internal
+schema:
+- name: day
+  type: int
+  nullable: false
+- name: region
+  type: string
+  nullable: false
+- name: line
+  type: string
+  nullable: false
+- name: queue
+  type: string
+  nullable: false
+- name: new_claims
+  type: int
+  nullable: false
+- name: paid_claims
+  type: int
+  nullable: false
+- name: cycle_days
+  type: int
+  nullable: false
+- name: reopened
+  type: int
+  nullable: false
+- name: escalations
+  type: int
+  nullable: false
+- name: reviews
+  type: int
+  nullable: false
+- name: overpayment_found_usd
+  type: float
+  nullable: false
+- name: referrals
+  type: int
+  nullable: false
+- name: recovered_usd
+  type: float
+  nullable: false
+- name: paid_usd
+  type: float
+  nullable: false
+- name: audited_claims
+  type: int
+  nullable: false
+- name: audit_overpayment_usd
+  type: float
+  nullable: false
+- name: audit_missed_recovery_usd
+  type: float
+  nullable: false
+primary_key: &id001
+- day
+- region
+- line
+- queue
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: queue
+  values:
+  - fast_track
+  - standard
+  - complex
+- check: range
+  column: paid_claims
+  min: 0
+slo:
+  completeness_pct: 100
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - claims_handling
+  - performance_reporting
+  prohibited_purposes:
+  - claim_denial_without_human_review
+  - underwriting_by_protected_characteristic
+  - sale_of_data_to_third_parties
+consumers:
+- agent:claims-assistant
+- agent:office-copilot-east
+- agent:office-copilot-west
+- agent:claims-finance
+- agent:claims-compliance
+inputs:
+- insurance.silver.claims
+- insurance.silver.offices
+- insurance.silver.queue_assignments
+- insurance.silver.claim_events
+- insurance.silver.payments
+- insurance.silver.audits
+- insurance.silver.subrogation
+agent_exposed: true

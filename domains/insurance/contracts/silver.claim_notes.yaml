@@ -1,0 +1,58 @@
+# Data contract: insurance.silver.claim_notes (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.claim_notes
+version: 1.0.0
+domain: insurance
+layer: silver
+table: claim_notes
+kind: conformed
+status: built
+description: Free-text adjuster and intake notes with claimant names, e-mail addresses and phone numbers masked and instruction-like text flagged.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: note_id
+  type: string
+  nullable: false
+- name: claim_id
+  type: string
+  nullable: false
+- name: office_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: author_role
+  type: string
+  nullable: false
+- name: text_redacted
+  type: string
+  nullable: false
+- name: injection_flag
+  type: bool
+  nullable: false
+- name: pii_redacted
+  type: bool
+  nullable: false
+primary_key: &id001
+- note_id
+quality:
+- check: unique
+  columns: *id001
+- check: referential
+  column: claim_id
+  ref: insurance.silver.claims.claim_id
+- check: referential
+  column: office_id
+  ref: insurance.silver.offices.office_id
+slo:
+  completeness_pct: 100
+  freshness_days: 7
+inputs:
+- insurance.bronze.adjuster_notes
+- insurance.silver.claims
+text_fields:
+- text_redacted

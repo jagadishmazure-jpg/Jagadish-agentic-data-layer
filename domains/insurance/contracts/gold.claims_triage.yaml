@@ -1,0 +1,90 @@
+# Data contract: insurance.gold.claims_triage (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.gold.claims_triage
+version: 1.0.0
+domain: insurance
+layer: gold
+table: claims_triage
+kind: insight_product
+status: built
+description: 'Every claim reported yesterday and waiting for a queue: the probability it is complex (logistic model in adl.domains.insurance.models, first-notice
+  facts only), its largest driver, the queue the current rules would choose and the queue the policy suggests. No claimant identity, postcode or proxy group.'
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: claim_id
+  type: string
+  nullable: false
+- name: office_id
+  type: string
+  nullable: false
+- name: region
+  type: string
+  nullable: false
+- name: line
+  type: string
+  nullable: false
+- name: cause
+  type: string
+  nullable: false
+- name: channel
+  type: string
+  nullable: false
+- name: estimate_usd
+  type: float
+  nullable: false
+- name: complexity_probability
+  type: float
+  nullable: false
+- name: top_driver
+  type: string
+  nullable: false
+- name: current_rule_queue
+  type: string
+  nullable: false
+- name: suggested_queue
+  type: string
+  nullable: false
+- name: as_of_day
+  type: int
+  nullable: false
+primary_key: &id001
+- claim_id
+quality:
+- check: unique
+  columns: *id001
+- check: range
+  column: complexity_probability
+  min: 0
+  max: 1
+- check: accepted_values
+  column: suggested_queue
+  values: &id002
+  - fast_track
+  - standard
+  - complex
+- check: accepted_values
+  column: current_rule_queue
+  values: *id002
+slo:
+  completeness_pct: 100
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - claims_handling
+  prohibited_purposes:
+  - claim_denial_without_human_review
+  - underwriting_by_protected_characteristic
+  - sale_of_data_to_third_parties
+  notes: Routes a claim to a queue. It must never be used to deny, reduce or delay a claim without a person reviewing it.
+consumers:
+- agent:claims-assistant
+- agent:office-copilot-east
+- agent:office-copilot-west
+inputs:
+- insurance.silver.claims
+- insurance.silver.policies
+- insurance.silver.offices
+agent_exposed: true

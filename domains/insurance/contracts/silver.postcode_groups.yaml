@@ -1,0 +1,37 @@
+# Data contract: insurance.silver.postcode_groups (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.postcode_groups
+version: 1.0.0
+domain: insurance
+layer: silver
+table: postcode_groups
+kind: conformed
+status: built
+description: 'Synthetic proxy group (G1 or G2) for each postcode district. Restricted: read only by the fairness audit, never a model feature and never
+  exposed to agents.'
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: restricted
+schema:
+- name: postcode_district
+  type: string
+  nullable: false
+- name: proxy_group
+  type: string
+  nullable: false
+primary_key: &id001
+- postcode_district
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: proxy_group
+  values:
+  - G1
+  - G2
+slo:
+  completeness_pct: 100
+  freshness_days: 365
+inputs:
+- insurance.bronze.postcode_groups

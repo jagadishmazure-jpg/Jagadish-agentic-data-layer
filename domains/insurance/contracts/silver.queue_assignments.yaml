@@ -1,0 +1,58 @@
+# Data contract: insurance.silver.queue_assignments (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.queue_assignments
+version: 1.0.0
+domain: insurance
+layer: silver
+table: queue_assignments
+kind: conformed
+status: built
+description: 'Queue assignments per claim: triage at first notice, escalations from fast track and reopenings.'
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: claim_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: queue
+  type: string
+  nullable: false
+- name: reason
+  type: string
+  nullable: false
+primary_key: &id001
+- claim_id
+- day
+- reason
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: queue
+  values:
+  - fast_track
+  - standard
+  - complex
+- check: accepted_values
+  column: reason
+  values:
+  - triage
+  - escalation
+  - reopen
+- check: referential
+  column: claim_id
+  ref: insurance.silver.claims.claim_id
+- check: freshness
+  column: day
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+  max_quarantine_pct: 1.0
+inputs:
+- insurance.bronze.queue_assignments
+- insurance.silver.claims

@@ -1,0 +1,51 @@
+# Data contract: insurance.silver.audits (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.audits
+version: 1.0.0
+domain: insurance
+layer: silver
+table: audits
+kind: conformed
+status: built
+description: 'Random closed-file audits after payment: the overpayment found in the proposed payment and whether a recovery from a third party was possible.
+  The unbiased record the leakage models learn from.'
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: audit_id
+  type: string
+  nullable: false
+- name: claim_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: overpayment_found_usd
+  type: float
+  nullable: false
+- name: subrogation_potential
+  type: bool
+  nullable: false
+primary_key: &id001
+- audit_id
+quality:
+- check: unique
+  columns: *id001
+- check: range
+  column: overpayment_found_usd
+  min: 0
+- check: referential
+  column: claim_id
+  ref: insurance.silver.claims.claim_id
+- check: row_count_min
+  value: 500
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+  max_quarantine_pct: 1.0
+inputs:
+- insurance.bronze.audits
+- insurance.silver.claims

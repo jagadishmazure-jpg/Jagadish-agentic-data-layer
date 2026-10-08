@@ -1,0 +1,60 @@
+# Data contract: insurance.silver.payments (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.payments
+version: 1.0.0
+domain: insurance
+layer: silver
+table: payments
+kind: conformed
+status: built
+description: Payments made, whether a leakage review was done before payment and the overpayment it removed.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: payment_id
+  type: string
+  nullable: false
+- name: claim_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: proposed_usd
+  type: float
+  nullable: false
+- name: paid_usd
+  type: float
+  nullable: false
+- name: reviewed
+  type: bool
+  nullable: false
+- name: overpayment_found_usd
+  type: float
+  nullable: false
+primary_key: &id001
+- payment_id
+quality:
+- check: unique
+  columns: *id001
+- check: range
+  column: paid_usd
+  min: 0
+  max: 10000000
+- check: range
+  column: overpayment_found_usd
+  min: 0
+- check: referential
+  column: claim_id
+  ref: insurance.silver.claims.claim_id
+- check: freshness
+  column: day
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+  max_quarantine_pct: 1.0
+inputs:
+- insurance.bronze.payments
+- insurance.silver.claims

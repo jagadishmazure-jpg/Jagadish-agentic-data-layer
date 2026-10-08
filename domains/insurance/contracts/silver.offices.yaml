@@ -1,0 +1,39 @@
+# Data contract: insurance.silver.offices (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.offices
+version: 1.0.0
+domain: insurance
+layer: silver
+table: offices
+kind: conformed
+status: built
+description: Claims offices and the region each belongs to; the gateway uses it for row-level security.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: internal
+schema:
+- name: office_id
+  type: string
+  nullable: false
+- name: name
+  type: string
+  nullable: false
+- name: region
+  type: string
+  nullable: false
+primary_key: &id001
+- office_id
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: region
+  values:
+  - east
+  - west
+slo:
+  completeness_pct: 100
+  freshness_days: 365
+inputs:
+- insurance.bronze.offices

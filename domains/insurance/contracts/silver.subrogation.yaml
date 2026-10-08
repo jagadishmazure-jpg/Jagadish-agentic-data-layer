@@ -1,0 +1,50 @@
+# Data contract: insurance.silver.subrogation (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.subrogation
+version: 1.0.0
+domain: insurance
+layer: silver
+table: subrogation
+kind: conformed
+status: built
+description: Subrogation referrals made at payment and what was recovered.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: claim_id
+  type: string
+  nullable: false
+- name: referral_day
+  type: int
+  nullable: false
+- name: recovered_usd
+  type: float
+  nullable: false
+- name: status
+  type: string
+  nullable: false
+primary_key: &id001
+- claim_id
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: status
+  values:
+  - recovered
+  - unsuccessful
+- check: range
+  column: recovered_usd
+  min: 0
+- check: referential
+  column: claim_id
+  ref: insurance.silver.claims.claim_id
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+  max_quarantine_pct: 1.0
+inputs:
+- insurance.bronze.subrogation
+- insurance.silver.claims

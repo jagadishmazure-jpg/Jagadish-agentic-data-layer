@@ -1,0 +1,63 @@
+# Data contract: insurance.gold.value_ledger (owner: finance-analytics). Validated by adl.core.contracts in CI.
+id: insurance.gold.value_ledger
+version: 1.0.0
+domain: insurance
+layer: gold
+table: value_ledger
+kind: insight_product
+status: built
+description: Simulated value of each lever against the current rules over 28 days, with paired 95% bootstrap intervals.
+owner:
+  team: finance-analytics
+  steward: Finance data steward
+  contact: finance-data@ferrowind.example
+classification: internal
+schema:
+- name: ledger_id
+  type: string
+  nullable: false
+- name: lever
+  type: string
+  nullable: false
+- name: metric
+  type: string
+  nullable: false
+- name: baseline_usd
+  type: float
+  nullable: false
+- name: agent_usd
+  type: float
+  nullable: false
+- name: delta_usd
+  type: float
+  nullable: false
+- name: ci_low_usd
+  type: float
+  nullable: false
+- name: ci_high_usd
+  type: float
+  nullable: false
+- name: replications
+  type: int
+  nullable: false
+- name: horizon_days
+  type: int
+  nullable: false
+primary_key: &id001
+- ledger_id
+quality:
+- check: unique
+  columns: *id001
+slo:
+  completeness_pct: 100
+  freshness_days: 365
+acceptable_use:
+  allowed_purposes:
+  - value_reporting
+  prohibited_purposes:
+  - sale_of_data_to_third_parties
+consumers:
+- agent:claims-finance
+inputs:
+- insurance.gold.claims_daily
+agent_exposed: true

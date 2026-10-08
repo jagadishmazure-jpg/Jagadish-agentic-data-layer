@@ -1,0 +1,50 @@
+# Data contract: insurance.silver.policies (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.policies
+version: 1.0.0
+domain: insurance
+layer: silver
+table: policies
+kind: conformed
+status: built
+description: 'Policies behind the claims: line, tenure and prior claims in the last three years.'
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: policy_id
+  type: string
+  nullable: false
+- name: line
+  type: string
+  nullable: false
+- name: tenure_years
+  type: int
+  nullable: false
+- name: prior_claims_3y
+  type: int
+  nullable: false
+primary_key: &id001
+- policy_id
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: line
+  values:
+  - auto
+  - home
+  - commercial
+- check: range
+  column: tenure_years
+  min: 0
+  max: 80
+- check: row_count_min
+  value: 5000
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+  max_quarantine_pct: 1.0
+inputs:
+- insurance.bronze.policies

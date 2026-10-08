@@ -1,0 +1,136 @@
+# Data contract: insurance.silver.claims (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.claims
+version: 1.0.0
+domain: insurance
+layer: silver
+table: claims
+kind: conformed
+status: built
+description: First notice of loss per claim with the claimant's contact details and postcode district; restricted, never exposed to agents. App retries
+  are removed; training-environment records and claims reported before the loss are quarantined.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: restricted
+schema:
+- name: claim_id
+  type: string
+  nullable: false
+- name: policy_id
+  type: string
+  nullable: false
+- name: claimant_name
+  type: string
+  nullable: false
+  pii: true
+- name: email
+  type: string
+  nullable: false
+  pii: true
+- name: phone
+  type: string
+  nullable: false
+  pii: true
+- name: postcode_district
+  type: string
+  nullable: false
+- name: office_id
+  type: string
+  nullable: false
+- name: line
+  type: string
+  nullable: false
+- name: cause
+  type: string
+  nullable: false
+- name: channel
+  type: string
+  nullable: false
+- name: loss_day
+  type: int
+  nullable: false
+- name: reported_day
+  type: int
+  nullable: false
+- name: report_lag_days
+  type: int
+  nullable: false
+- name: estimate_usd
+  type: float
+  nullable: false
+- name: injury
+  type: bool
+  nullable: false
+- name: police_report
+  type: bool
+  nullable: false
+- name: third_party_flag
+  type: bool
+  nullable: false
+- name: photos
+  type: bool
+  nullable: false
+primary_key: &id001
+- claim_id
+quality:
+- check: unique
+  columns: *id001
+- check: regex
+  column: claim_id
+  pattern: CLM-\d{6}
+- check: range
+  column: report_lag_days
+  min: 0
+  max: 365
+- check: range
+  column: estimate_usd
+  min: 0
+  max: 5000000
+- check: accepted_values
+  column: line
+  values:
+  - auto
+  - home
+  - commercial
+- check: accepted_values
+  column: cause
+  values:
+  - collision_third_party
+  - collision_single
+  - theft
+  - glass
+  - weather
+  - water_escape
+  - storm
+  - fire
+  - accidental_damage
+  - liability
+- check: accepted_values
+  column: channel
+  values:
+  - app
+  - phone
+  - broker
+- check: referential
+  column: office_id
+  ref: insurance.silver.offices.office_id
+- check: referential
+  column: policy_id
+  ref: insurance.silver.policies.policy_id
+- check: referential
+  column: postcode_district
+  ref: insurance.silver.postcode_groups.postcode_district
+- check: freshness
+  column: reported_day
+- check: row_count_min
+  value: 5000
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+  max_quarantine_pct: 1.0
+inputs:
+- insurance.bronze.fnol
+- insurance.silver.offices
+- insurance.silver.policies
+- insurance.silver.postcode_groups

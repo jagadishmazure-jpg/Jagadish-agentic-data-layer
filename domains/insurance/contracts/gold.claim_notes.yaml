@@ -1,0 +1,65 @@
+# Data contract: insurance.gold.claim_notes (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.gold.claim_notes
+version: 1.0.0
+domain: insurance
+layer: gold
+table: claim_notes
+kind: data_product
+status: built
+description: Redacted adjuster and intake notes with office and region; returned to agents quoted as untrusted data.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: internal
+schema:
+- name: note_id
+  type: string
+  nullable: false
+- name: claim_id
+  type: string
+  nullable: false
+- name: office_id
+  type: string
+  nullable: false
+- name: region
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: author_role
+  type: string
+  nullable: false
+- name: text_redacted
+  type: string
+  nullable: false
+- name: injection_flag
+  type: bool
+  nullable: false
+primary_key: &id001
+- note_id
+quality:
+- check: unique
+  columns: *id001
+slo:
+  completeness_pct: 100
+  freshness_days: 7
+acceptable_use:
+  allowed_purposes:
+  - claims_handling
+  - claims_quality_review
+  prohibited_purposes:
+  - claim_denial_without_human_review
+  - underwriting_by_protected_characteristic
+  - sale_of_data_to_third_parties
+consumers:
+- agent:claims-assistant
+- agent:office-copilot-east
+- agent:office-copilot-west
+inputs:
+- insurance.silver.claim_notes
+- insurance.silver.offices
+agent_exposed: true
+text_fields:
+- text_redacted

@@ -1,0 +1,58 @@
+# Data contract: insurance.silver.claim_events (owner: claims-data). Validated by adl.core.contracts in CI.
+id: insurance.silver.claim_events
+version: 1.0.0
+domain: insurance
+layer: silver
+table: claim_events
+kind: conformed
+status: built
+description: Claim lifecycle events (reported, assessed with the adjuster's complexity code, ready for payment, paid, reopened, closed); orphan events are
+  quarantined.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: confidential
+schema:
+- name: claim_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: event
+  type: string
+  nullable: false
+- name: detail
+  type: string
+  nullable: false
+primary_key: &id001
+- claim_id
+- day
+- event
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: event
+  values:
+  - reported
+  - assessed
+  - ready
+  - paid
+  - reopened
+  - closed
+- check: referential
+  column: claim_id
+  ref: insurance.silver.claims.claim_id
+- check: freshness
+  column: day
+- check: row_count_min
+  value: 20000
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+  max_quarantine_pct: 1.0
+inputs:
+- insurance.bronze.claim_events
+- insurance.silver.claims
