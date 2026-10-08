@@ -215,3 +215,25 @@ def test_deploy_script_has_every_subcommand_and_cloud():
     text = (ROOT / ".github/scripts/deploy.sh").read_text()
     for fn in ("provision()", "smoke()", "destroy()", "azure)", "gcp)", "aws)"):
         assert fn in text
+
+
+# ---------------------------------------------------------------- adl iac summary
+def test_iac_summary_finds_every_control():
+    from adl import iac
+
+    tf = {s["stack"]: s for s in iac.terraform()}
+    assert set(tf) == set(STACKS)
+    for s in tf.values():
+        assert s["resources"] > 10 and s["test_runs"] >= 2
+        assert all(s["controls"].values()), s["controls"]
+    assert all(iac.bicep()["controls"].values())
+    assert iac.controls_ok() and iac.checkov_skips() > 0
+
+
+def test_iac_summary_counts_workflow_hardening():
+    from adl import iac
+
+    wf = {w["workflow"]: w for w in iac.workflows()}
+    assert all(w["read_only"] and w["pinned"] == w["actions"] for w in wf.values())
+    assert wf["deploy.yml"]["gated"] == 2 and wf["teardown.yml"]["gated"] == 1
+    assert wf["ci.yml"]["oidc"] == 0

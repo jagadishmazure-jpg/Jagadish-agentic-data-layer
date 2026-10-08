@@ -4,7 +4,7 @@ adl domains                 the four business domains and whether each is built 
 adl contracts               validate every data contract (all domains) and summarise them
 adl run                     build bronze -> silver -> gold and the insight products; quality per product
 adl quality                 data-quality results per product (checks, completeness, quarantine)
-adl lineage [--dataset D]   OpenLineage events and the upstream of a dataset
+adl lineage [--dataset D] [--out F]  OpenLineage events, the upstream of a dataset, optional JSONL file
 adl metrics                 governed metrics from the semantic layer
 adl value-case              Phase 0: KPI baselines and targets from config/value-case.yaml
 adl forecast                demand forecast backtest against naive baselines
@@ -19,6 +19,7 @@ adl value                   value ledger with 95% intervals, KPI targets hit or 
 adl focus [--out F]         FOCUS 1.0 cost rows for the AI and platform estimate
 adl tune                    the policy settings grid on the tuning seeds
 adl adapters                cloud storage adapters against fake clients
+adl iac                     static summary of the Terraform, Bicep and workflows (no cloud, no terraform run)
 adl mcp --identity I | mcp-demo
 adl a2a-demo
 adl gate                    release gate (exit 1 on any failure)
@@ -148,10 +149,18 @@ def cmd_lineage(a) -> int:
 
     problems = sum(len(validate_event(e)) for e in lin.events)
     print(f"events: {len(lin.events)}; schema problems: {problems}; edges: {len(lin.edges())}")
+    known = {d for i, _, o in lin.edges() for d in (i, o)}
+    if a.dataset not in known:
+        print(f"unknown dataset {a.dataset}; known datasets: {len(known)}")
+        return 1
     up = sorted(lin.upstream(a.dataset))
     print(f"upstream of {a.dataset} ({len(up)}):")
     for d in up:
         print(f"  {d}")
+    if a.out:
+        Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+        lin.write(Path(a.out))
+        print(f"wrote {len(lin.events)} events to {a.out}")
     return 0
 
 
@@ -498,6 +507,46 @@ def cmd_adapters(a) -> int:
     return 0
 
 
+def cmd_iac(a) -> int:
+    from adl import iac
+
+    tf = iac.terraform()
+    print(
+        _table(
+            [[s["stack"], s["resources"], s["data"], s["variables"], s["outputs"], s["test_runs"]] for s in tf],
+            ["terraform stack", "resources", "data sources", "variables", "outputs", "test runs"],
+        )
+    )
+    print()
+    rows = [[s["stack"], name, "yes" if ok else "NO"] for s in tf for name, ok in s["controls"].items()]
+    b = iac.bicep()
+    rows += [["bicep", name, "yes" if ok else "NO"] for name, ok in b["controls"].items()]
+    print(_table(rows, ["stack", "control", "set"]))
+    print(f"\nbicep: {b['files']} files, {b['resources']} resource declarations, {b['modules']} modules")
+    print(f"checkov skips with a written reason: {iac.checkov_skips()}")
+    print()
+    wf = iac.workflows()
+    print(
+        _table(
+            [
+                [
+                    w["workflow"],
+                    ", ".join(map(str, w["triggers"])),
+                    "yes" if w["read_only"] else "NO",
+                    f"{w['pinned']}/{w['actions']}",
+                    w["jobs"],
+                    w["gated"],
+                    w["oidc"],
+                ]
+                for w in wf
+            ],
+            ["workflow", "triggers", "read-only default", "SHA-pinned actions", "jobs", "gated by DEPLOY_ENABLED", "OIDC jobs"],
+        )
+    )
+    print("\nstatic read of the files only; nothing has been applied to any cloud")
+    return 0 if iac.controls_ok() else 1
+
+
 def cmd_mcp(a) -> int:  # pragma: no cover - long-running stdio server
     from adl.domains.retail import runtime
     from adl.serve.mcp_server import build_server
@@ -622,6 +671,7 @@ def main(argv: list[str] | None = None) -> int:
         "value": cmd_value,
         "tune": cmd_tune,
         "adapters": cmd_adapters,
+        "iac": cmd_iac,
         "mcp-demo": cmd_mcp_demo,
         "a2a-demo": cmd_a2a_demo,
         "gate": cmd_gate,
@@ -630,6 +680,7 @@ def main(argv: list[str] | None = None) -> int:
         sub.add_parser(name).set_defaults(fn=fn)
     p = sub.add_parser("lineage")
     p.add_argument("--dataset", default="gold.value_ledger")
+    p.add_argument("--out", help="write the events as JSON lines, e.g. out/lineage/events.jsonl")
     p.set_defaults(fn=cmd_lineage)
     p = sub.add_parser("focus")
     p.add_argument("--out")

@@ -12,7 +12,7 @@ response at another discount d is extrapolated with the elasticity: take(d) = ta
 
 Decision. For near-date units n and forecast f: no markdown if n <= take(0) * f; otherwise the smallest
 discount on the grid (10% steps, at most 50%) whose expected take clears n; the deepest allowed if none
-does. Anything above 30% needs a person's approval (see config/policy.yaml).
+does. Anything deeper than the approval threshold (20% in config/policy.yaml) waits for a person.
 """
 
 from __future__ import annotations

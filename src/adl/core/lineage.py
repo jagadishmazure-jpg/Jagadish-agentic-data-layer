@@ -4,7 +4,7 @@ Each job (land a bronze table, conform a silver table, build a gold product, tra
 START and a COMPLETE (or FAIL) `RunEvent` with its input and output datasets, a schema facet, output
 row counts and a data-quality facet from the contract checks. The events follow the OpenLineage 2-0-2
 RunEvent shape, so they can be posted to Microsoft Purview, Marquez, Databricks Unity Catalog or
-Google Dataplex lineage endpoints; here they are written to `out/lineage/events.jsonl`.
+Google Dataplex lineage endpoints; `adl lineage --out out/lineage/events.jsonl` writes them as JSON lines.
 
 Run ids are UUIDv5 of the job name and the run sequence and event times are synthetic, so the file is
 identical on every run.

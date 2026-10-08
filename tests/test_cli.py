@@ -6,7 +6,7 @@ from adl.cli import gate_checks, main
 
 COMMANDS = [
     "domains", "contracts", "run", "quality", "lineage", "metrics", "value-case", "forecast", "stockout", "elasticity", "markdown",
-    "retrieval", "access", "agents", "injection", "value", "focus", "adapters", "mcp-demo", "a2a-demo",
+    "retrieval", "access", "agents", "injection", "value", "focus", "adapters", "iac", "mcp-demo", "a2a-demo",
 ]  # fmt: skip
 
 

@@ -34,6 +34,14 @@ def test_quality_fails_a_table_that_breaks_its_contract(tmp_path):
     assert not q.passed and {"unique", "range", "accepted_values"} <= failed
 
 
+def test_a_stale_product_fails_its_freshness_slo(lake):
+    cs = lake.build.contracts
+    c = cs["retail.gold.sales_daily"]
+    assert evaluate(c, lake.build.store, cs, 0, 139).passed
+    late = evaluate(c, lake.build.store, cs, 0, 139 + c.slo.freshness_days + 2)
+    assert not late.passed and late.freshness_lag > c.slo.freshness_days
+
+
 def test_lineage_events_are_valid_openlineage(valued):
     lk, _ = valued
     events = lk.build.lineage.events
