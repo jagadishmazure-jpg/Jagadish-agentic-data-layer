@@ -21,7 +21,7 @@ SECTIONS = [
     "Real output", "Tests and gates", "Guardrails", "Security and governance", "Observability",
     "Failure modes", "Mapping to cloud services", "Limitations", "Interview talking points",
 ]  # fmt: skip
-FULL_DOCS = sorted(p for d in ("components", "infra", "mortgage", "insurance") for p in (ROOT / "docs" / d).glob("*.md") if p.name != "README.md")
+FULL_DOCS = sorted(p for d in ("components", "infra", "mortgage", "insurance", "healthcare") for p in (ROOT / "docs" / d).glob("*.md") if p.name != "README.md")
 SERVICES = ("Microsoft Fabric", "Entra ID", "BigQuery", "S3")
 MONTHS = r"\b(January|February|March|April|June|July|August|September|October|November|December)\b"
 SUFFIXES = {".md", ".py", ".json", ".yml", ".yaml", ".tf", ".bicep", ".hcl", ".sh", ".toml", ".jsonl", ".tfvars"}
@@ -95,6 +95,7 @@ def test_full_doc_set_exists():
     assert len([n for n in names if n.startswith("infra/")]) == 5
     assert len([n for n in names if n.startswith("mortgage/")]) == 5
     assert len([n for n in names if n.startswith("insurance/")]) >= 5
+    assert len([n for n in names if n.startswith("healthcare/")]) >= 5
     for top in (
         "architecture", "roadmap", "value-case", "mit-article-mapping", "ai-business-models", "operating-model",
         "data-governance", "purview-mapping", "threat-model", "observability", "failure-modes", "cloud-mapping",
@@ -146,7 +147,7 @@ def test_no_secrets_or_real_identifiers():
             assert not b.search(t), f"{b.pattern} in {p}"
 
 
-@pytest.mark.parametrize("domain", ["retail", "mortgage", "insurance"])
+@pytest.mark.parametrize("domain", ["retail", "mortgage", "insurance", "healthcare"])
 def test_people_in_the_synthetic_data_use_reserved_contact_details(domain):
     text = (ROOT / f"src/adl/domains/{domain}/synth.py").read_text()
     for d in re.findall(r"@([a-z0-9.-]+\.[a-z]+)", text):
@@ -222,7 +223,10 @@ def test_readme_test_count_is_the_real_count():
     assert m and collected and int(m.group(1)) == int(collected.group(1)), (m and m.group(1), r.stdout[-200:])
 
 
-def test_planned_domains_say_planned():
-    for d in ("healthcare",):
-        t = flat(ROOT / "domains" / d / "README.md")
-        assert "planned" in t.lower() and "not built" in t.lower()
+def test_healthcare_says_synthetic_and_phi_free_prominently():
+    for p in (ROOT / "domains/healthcare/README.md", ROOT / "docs/healthcare/README.md"):
+        head = "\n".join(p.read_text().splitlines()[:8]).lower()
+        assert "synthetic" in head and "phi-free" in head, p
+    for p in (ROOT / "docs/healthcare").glob("*.md"):
+        assert "synthetic" in p.read_text().lower(), p
+    assert "not a medical device" in flat(ROOT / "README.md").lower()

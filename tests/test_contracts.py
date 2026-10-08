@@ -52,16 +52,28 @@ def test_insurance_has_eleven_silver_and_seven_gold():
             assert {"claim_denial_without_human_review", "underwriting_by_protected_characteristic"} <= set(c.acceptable_use.prohibited_purposes)
 
 
-@pytest.mark.parametrize("name", ["healthcare"])
-def test_planned_domains_have_only_planned_contracts(name):
-    d = get(name)
-    assert d.status == "planned"
-    assert all(c.status == "planned" for c in d.contracts().values())
-    assert (d.folder / "README.md").exists()
+def test_healthcare_has_nine_silver_and_six_gold():
+    cs = load_all(ROOT / "domains/healthcare/contracts")
+    assert sum(c.layer == "silver" for c in cs.values()) == 9
+    assert sum(c.layer == "gold" for c in cs.values()) == 6
+    assert all(c.status == "built" for c in cs.values())
+    assert cs["healthcare.silver.patients"].classification == "restricted"
+    assert cs["healthcare.silver.demographics"].classification == "restricted"
+    for c in cs.values():
+        if c.layer == "gold" and c.table != "value_ledger":
+            assert {"insurance_eligibility", "employee_performance_management", "medication_or_diagnosis_decisions"} <= set(
+                c.acceptable_use.prohibited_purposes
+            )
+
+
+def test_no_domain_is_planned_any_more():
+    assert all(d.status == "built" for d in REGISTRY.values())
+    for d in REGISTRY.values():
+        assert all(c.status == "built" for c in d.contracts().values()) and (d.folder / "README.md").exists()
 
 
 def test_registry_built_domains():
-    assert [d.name for d in REGISTRY.values() if d.status == "built"] == ["retail", "mortgage", "insurance"]
+    assert [d.name for d in REGISTRY.values() if d.status == "built"] == ["retail", "mortgage", "insurance", "healthcare"]
     with pytest.raises(KeyError):
         get("banking")
 
