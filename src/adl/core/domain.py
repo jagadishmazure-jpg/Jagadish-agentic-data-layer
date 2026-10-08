@@ -63,12 +63,12 @@ REGISTRY = {
     ),
     "healthcare": Domain(
         "healthcare",
-        "planned",
+        "built",
         "Halsey Vale Health",
         "inpatient fall risk",
-        "which patients the nurse in charge should check first on each shift",
-        ("falls per 1,000 bed-days", "falls with harm", "time to intervention"),
-        ("bed alarm", "hourly rounding", "mobility support"),
+        "which preventive measures each in-hospital patient gets each morning, approved by the nurse in charge",
+        ("falls per 1,000 bed-days", "falls with harm", "time to intervention", "sitter shifts"),
+        ("bed alarm", "hourly rounding", "mobility aid", "sitter request"),
     ),
 }
 

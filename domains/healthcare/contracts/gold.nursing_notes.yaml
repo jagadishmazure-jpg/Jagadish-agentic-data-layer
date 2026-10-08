@@ -1,20 +1,24 @@
-# Data contract: healthcare.gold.ward_fall_rates (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
-id: healthcare.gold.ward_fall_rates
+# Data contract: healthcare.gold.nursing_notes (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.gold.nursing_notes
 version: 1.0.0
 domain: healthcare
 layer: gold
-table: ward_fall_rates
+table: nursing_notes
 kind: data_product
 status: built
-description: Falls and falls with harm per 1,000 bed-days per ward and week. Aggregates only, no patient keys.
+description: Redacted nursing notes keyed by the pseudonymous encounter key, with ward and region; encounter ids in the text are replaced by the key. Returned
+  to agents quoted as untrusted data.
 owner:
   team: clinical-data
   steward: Clinical data steward
   contact: clinical-data@halseyvale.example
 classification: internal
 schema:
-- name: week
-  type: int
+- name: note_id
+  type: string
+  nullable: false
+- name: encounter_key
+  type: string
   nullable: false
 - name: ward_id
   type: string
@@ -22,38 +26,29 @@ schema:
 - name: region
   type: string
   nullable: false
-- name: bed_days
+- name: day
   type: int
   nullable: false
-- name: falls
-  type: int
+- name: author_role
+  type: string
   nullable: false
-- name: harm_falls
-  type: int
+- name: text_redacted
+  type: string
   nullable: false
-- name: falls_per_1000_bed_days
-  type: float
-  nullable: false
-- name: harm_falls_per_1000_bed_days
-  type: float
+- name: injection_flag
+  type: bool
   nullable: false
 primary_key: &id001
-- week
-- ward_id
+- note_id
 quality:
 - check: unique
   columns: *id001
-- check: range
-  column: falls_per_1000_bed_days
-  min: 0
 slo:
   completeness_pct: 100
   freshness_days: 7
 acceptable_use:
   allowed_purposes:
   - fall_prevention
-  - quality_improvement
-  - equity_monitoring
   prohibited_purposes:
   - insurance_eligibility
   - employee_performance_management
@@ -61,10 +56,12 @@ acceptable_use:
   - sale_of_data_to_third_parties
   - marketing
 consumers:
+- agent:fall-prevention-assistant
 - agent:ward-copilot-north
 - agent:ward-copilot-south
-- agent:patient-safety-analyst
-- agent:health-equity
 inputs:
-- healthcare.gold.ward_daily
+- healthcare.silver.nursing_notes
+- healthcare.silver.wards
 agent_exposed: true
+text_fields:
+- text_redacted

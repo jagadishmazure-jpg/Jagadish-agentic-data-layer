@@ -1,0 +1,95 @@
+# Data contract: healthcare.silver.morse_assessments (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.silver.morse_assessments
+version: 1.0.0
+domain: healthcare
+layer: silver
+table: morse_assessments
+kind: conformed
+status: built
+description: Morse fall scale items and total, taken on admission and every third day; assessments whose keyed total does not match the items are quarantined.
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: confidential
+schema:
+- name: encounter_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: history_of_falling
+  type: int
+  nullable: false
+- name: secondary_diagnosis
+  type: int
+  nullable: false
+- name: ambulatory_aid
+  type: int
+  nullable: false
+- name: iv_access
+  type: int
+  nullable: false
+- name: gait
+  type: int
+  nullable: false
+- name: mental_status
+  type: int
+  nullable: false
+- name: total
+  type: int
+  nullable: false
+primary_key: &id001
+- encounter_id
+- day
+quality:
+- check: unique
+  columns: *id001
+- check: referential
+  column: encounter_id
+  ref: healthcare.silver.encounters.encounter_id
+- check: accepted_values
+  column: history_of_falling
+  values:
+  - '0'
+  - '25'
+- check: accepted_values
+  column: secondary_diagnosis
+  values:
+  - '0'
+  - '15'
+- check: accepted_values
+  column: ambulatory_aid
+  values:
+  - '0'
+  - '15'
+  - '30'
+- check: accepted_values
+  column: iv_access
+  values:
+  - '0'
+  - '20'
+- check: accepted_values
+  column: gait
+  values:
+  - '0'
+  - '10'
+  - '20'
+- check: accepted_values
+  column: mental_status
+  values:
+  - '0'
+  - '15'
+- check: range
+  column: total
+  min: 0
+  max: 125
+- check: freshness
+  column: day
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+inputs:
+- healthcare.bronze.morse_assessments
+- healthcare.silver.encounters

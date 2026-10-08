@@ -1,0 +1,40 @@
+# Data contract: healthcare.silver.demographics (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.silver.demographics
+version: 1.0.0
+domain: healthcare
+layer: silver
+table: demographics
+kind: conformed
+status: built
+description: 'Synthetic group (G1 or G2) per record number. Restricted: read only by the fairness audit, never a model feature and never exposed to agents.'
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: restricted
+schema:
+- name: mrn
+  type: string
+  nullable: false
+- name: synthetic_group
+  type: string
+  nullable: false
+primary_key: &id001
+- mrn
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: synthetic_group
+  values:
+  - G1
+  - G2
+- check: referential
+  column: mrn
+  ref: healthcare.silver.patients.mrn
+slo:
+  completeness_pct: 100
+  freshness_days: 365
+inputs:
+- healthcare.bronze.demographics
+- healthcare.silver.patients

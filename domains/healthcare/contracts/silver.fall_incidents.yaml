@@ -1,0 +1,50 @@
+# Data contract: healthcare.silver.fall_incidents (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.silver.fall_incidents
+version: 1.0.0
+domain: healthcare
+layer: silver
+table: fall_incidents
+kind: conformed
+status: built
+description: Inpatient falls from the incident reporting tool, with whether the fall caused harm and its severity.
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: confidential
+schema:
+- name: incident_id
+  type: string
+  nullable: false
+- name: encounter_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: harm
+  type: bool
+  nullable: false
+- name: severity
+  type: string
+  nullable: false
+primary_key: &id001
+- incident_id
+quality:
+- check: unique
+  columns: *id001
+- check: referential
+  column: encounter_id
+  ref: healthcare.silver.encounters.encounter_id
+- check: accepted_values
+  column: severity
+  values:
+  - none
+  - minor
+  - moderate
+slo:
+  completeness_pct: 100
+  freshness_days: 7
+inputs:
+- healthcare.bronze.fall_incidents
+- healthcare.silver.encounters

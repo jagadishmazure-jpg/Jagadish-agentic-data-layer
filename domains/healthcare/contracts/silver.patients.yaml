@@ -1,0 +1,52 @@
+# Data contract: healthcare.silver.patients (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.silver.patients
+version: 1.0.0
+domain: healthcare
+layer: silver
+table: patients
+kind: conformed
+status: built
+description: 'Synthetic patient identity per record number (name, age, phone, e-mail). Restricted: never exposed to agents and never a model feature; used
+  only to redact notes. Every value is invented (no PHI).'
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: restricted
+schema:
+- name: mrn
+  type: string
+  nullable: false
+- name: patient_name
+  type: string
+  nullable: false
+  pii: true
+- name: age_years
+  type: int
+  nullable: false
+  pii: true
+- name: phone
+  type: string
+  nullable: false
+  pii: true
+- name: email
+  type: string
+  nullable: false
+  pii: true
+primary_key: &id001
+- mrn
+quality:
+- check: unique
+  columns: *id001
+- check: regex
+  column: mrn
+  pattern: HV\d{7}
+- check: range
+  column: age_years
+  min: 18
+  max: 110
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+inputs:
+- healthcare.bronze.adt_admissions

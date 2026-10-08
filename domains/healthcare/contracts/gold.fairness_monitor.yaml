@@ -1,0 +1,72 @@
+# Data contract: healthcare.gold.fairness_monitor (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.gold.fairness_monitor
+version: 1.0.0
+domain: healthcare
+layer: gold
+table: fairness_monitor
+kind: insight_product
+status: built
+description: 'Preventive measures and outcomes by synthetic group over the history (current rules): the share of patients given each measure, the share
+  of falls with a measure in place, falls per 1,000 bed-days, and each rate''s ratio to the reference group. Aggregates only, cells of at least 11.'
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: confidential
+schema:
+- name: decision
+  type: string
+  nullable: false
+- name: group_name
+  type: string
+  nullable: false
+- name: eligible
+  type: int
+  nullable: false
+- name: selected
+  type: int
+  nullable: false
+- name: rate
+  type: float
+  nullable: false
+- name: ratio_to_reference
+  type: float
+  nullable: false
+primary_key: &id001
+- decision
+- group_name
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: group_name
+  values:
+  - G1
+  - G2
+- check: range
+  column: rate
+  min: 0
+- check: range
+  column: eligible
+  min: 11
+slo:
+  completeness_pct: 100
+  freshness_days: 30
+acceptable_use:
+  allowed_purposes:
+  - equity_monitoring
+  prohibited_purposes:
+  - insurance_eligibility
+  - employee_performance_management
+  - medication_or_diagnosis_decisions
+  - sale_of_data_to_third_parties
+  - marketing
+  - targeting_by_group
+consumers:
+- agent:health-equity
+inputs:
+- healthcare.silver.encounters
+- healthcare.silver.demographics
+- healthcare.silver.interventions
+- healthcare.silver.fall_incidents
+agent_exposed: true

@@ -1,12 +1,14 @@
-# Data contract (PLANNED, nothing built yet): healthcare.gold.fall_risk_worklist for the fictional Halsey Vale Health. Validated by adl.core.contracts in CI.
+# Data contract: healthcare.gold.fall_risk_worklist (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
 id: healthcare.gold.fall_risk_worklist
-version: 0.1.0
+version: 1.0.0
 domain: healthcare
 layer: gold
 table: fall_risk_worklist
 kind: insight_product
-status: planned
-description: Current inpatients ranked by fall risk for the nurse in charge; pseudonymous encounter ids only.
+status: built
+description: 'Every patient in hospital on the planning morning with the probability of a fall in the next three days (logistic model in adl.domains.healthcare.models),
+  its largest driver, the nursing signals the measures are matched to and yesterday''s measures. Pseudonymous keys only: no name, record number, encounter
+  id, diagnosis or synthetic group. Decision support for a nurse, not a medical device.'
 owner:
   team: clinical-data
   steward: Clinical data steward
@@ -16,35 +18,100 @@ schema:
 - name: encounter_key
   type: string
   nullable: false
-- name: ward
+- name: ward_id
   type: string
   nullable: false
-- name: risk_score
+- name: region
+  type: string
+  nullable: false
+- name: bed
+  type: string
+  nullable: false
+- name: age_band
+  type: string
+  nullable: false
+- name: days_in_hospital
+  type: int
+  nullable: false
+- name: morse_total
+  type: int
+  nullable: false
+- name: morse_high_risk
+  type: bool
+  nullable: false
+- name: confusion
+  type: string
+  nullable: false
+- name: night_restless
+  type: bool
+  nullable: false
+- name: toileting_calls
+  type: int
+  nullable: false
+- name: unsteady_gait
+  type: bool
+  nullable: false
+- name: has_mobility_aid
+  type: bool
+  nullable: false
+- name: measures_yesterday
+  type: string
+  nullable: false
+- name: fall_risk_3d
   type: float
   nullable: false
 - name: risk_band
   type: string
   nullable: false
-- name: top_factor
+- name: top_driver
   type: string
+  nullable: false
+- name: as_of_day
+  type: int
   nullable: false
 primary_key: &id001
 - encounter_key
 quality:
 - check: unique
   columns: *id001
+- check: regex
+  column: encounter_key
+  pattern: PT-[0-9A-F]{8}
+- check: range
+  column: fall_risk_3d
+  min: 0
+  max: 1
+- check: accepted_values
+  column: risk_band
+  values:
+  - low
+  - medium
+  - high
+- check: accepted_values
+  column: confusion
+  values:
+  - 'yes'
+  - 'no'
+  - not documented
 slo:
   completeness_pct: 99.5
   freshness_days: 1
 acceptable_use:
   allowed_purposes:
-  - direct_care_support
+  - fall_prevention
   prohibited_purposes:
   - insurance_eligibility
   - employee_performance_management
+  - medication_or_diagnosis_decisions
   - sale_of_data_to_third_parties
+  - marketing
 consumers:
-- agent:healthcare-assistant
+- agent:fall-prevention-assistant
+- agent:ward-copilot-north
+- agent:ward-copilot-south
 inputs:
-- healthcare.silver.inpatient_encounters
+- healthcare.silver.encounters
+- healthcare.silver.morse_assessments
+- healthcare.silver.nursing_observations
+- healthcare.silver.interventions
 agent_exposed: true

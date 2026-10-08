@@ -1,0 +1,57 @@
+# Data contract: healthcare.silver.nursing_notes (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.silver.nursing_notes
+version: 1.0.0
+domain: healthcare
+layer: silver
+table: nursing_notes
+kind: conformed
+status: built
+description: Free-text nursing notes with patient names, record numbers and phone numbers masked and instruction-like text flagged.
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: confidential
+schema:
+- name: note_id
+  type: string
+  nullable: false
+- name: encounter_id
+  type: string
+  nullable: false
+- name: ward_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: author_role
+  type: string
+  nullable: false
+- name: text_redacted
+  type: string
+  nullable: false
+- name: injection_flag
+  type: bool
+  nullable: false
+- name: pii_redacted
+  type: bool
+  nullable: false
+primary_key: &id001
+- note_id
+quality:
+- check: unique
+  columns: *id001
+- check: referential
+  column: encounter_id
+  ref: healthcare.silver.encounters.encounter_id
+- check: referential
+  column: ward_id
+  ref: healthcare.silver.wards.ward_id
+slo:
+  completeness_pct: 100
+  freshness_days: 7
+inputs:
+- healthcare.bronze.nursing_notes
+- healthcare.silver.encounters
+- healthcare.silver.patients

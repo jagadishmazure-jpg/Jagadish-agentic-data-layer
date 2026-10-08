@@ -1,0 +1,103 @@
+# Data contract: healthcare.gold.ward_daily (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.gold.ward_daily
+version: 1.0.0
+domain: healthcare
+layer: gold
+table: ward_daily
+kind: data_product
+status: built
+description: 'Per ward and day: bed-days, admissions, falls, falls with harm, falls with a measure in place, measure days, sitter shifts, first measures
+  and the days from admission to the first measure, and the cost of falls and measures at the stated assumptions. The source of the healthcare KPIs. Aggregates
+  only, no patient keys.'
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: internal
+schema:
+- name: day
+  type: int
+  nullable: false
+- name: ward_id
+  type: string
+  nullable: false
+- name: region
+  type: string
+  nullable: false
+- name: bed_days
+  type: int
+  nullable: false
+- name: admissions
+  type: int
+  nullable: false
+- name: falls
+  type: int
+  nullable: false
+- name: harm_falls
+  type: int
+  nullable: false
+- name: falls_protected
+  type: int
+  nullable: false
+- name: alarm_days
+  type: int
+  nullable: false
+- name: rounding_days
+  type: int
+  nullable: false
+- name: aid_starts
+  type: int
+  nullable: false
+- name: sitter_shifts
+  type: int
+  nullable: false
+- name: first_measures
+  type: int
+  nullable: false
+- name: first_measure_delay_days
+  type: int
+  nullable: false
+- name: fall_cost_usd
+  type: float
+  nullable: false
+- name: measure_cost_usd
+  type: float
+  nullable: false
+primary_key: &id001
+- day
+- ward_id
+quality:
+- check: unique
+  columns: *id001
+- check: referential
+  column: ward_id
+  ref: healthcare.silver.wards.ward_id
+- check: range
+  column: bed_days
+  min: 0
+- check: freshness
+  column: day
+slo:
+  completeness_pct: 100
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - fall_prevention
+  - quality_improvement
+  - value_reporting
+  prohibited_purposes:
+  - insurance_eligibility
+  - employee_performance_management
+  - medication_or_diagnosis_decisions
+  - sale_of_data_to_third_parties
+  - marketing
+consumers:
+- agent:fall-prevention-assistant
+- agent:patient-safety-analyst
+- agent:nursing-finance
+inputs:
+- healthcare.silver.encounters
+- healthcare.silver.wards
+- healthcare.silver.interventions
+- healthcare.silver.fall_incidents
+agent_exposed: true

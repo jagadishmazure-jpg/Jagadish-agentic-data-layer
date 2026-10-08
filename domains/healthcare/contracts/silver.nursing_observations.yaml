@@ -1,0 +1,63 @@
+# Data contract: healthcare.silver.nursing_observations (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.silver.nursing_observations
+version: 1.0.0
+domain: healthcare
+layer: silver
+table: nursing_observations
+kind: conformed
+status: built
+description: 'Daily nursing observations per patient: confusion (yes, no, or null when not documented), night restlessness, toileting calls, unsteady gait,
+  and the medication record''s sedation flag (a flag only, no drug names). Resent batches are removed; orphans and negative counts are quarantined.'
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: confidential
+schema:
+- name: encounter_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: confusion
+  type: string
+  nullable: true
+- name: night_restless
+  type: bool
+  nullable: false
+- name: toileting_calls
+  type: int
+  nullable: false
+- name: unsteady_gait
+  type: bool
+  nullable: false
+- name: sedation_flag
+  type: bool
+  nullable: false
+primary_key: &id001
+- encounter_id
+- day
+quality:
+- check: unique
+  columns: *id001
+- check: referential
+  column: encounter_id
+  ref: healthcare.silver.encounters.encounter_id
+- check: accepted_values
+  column: confusion
+  values:
+  - 'yes'
+  - 'no'
+- check: range
+  column: toileting_calls
+  min: 0
+  max: 30
+- check: freshness
+  column: day
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+inputs:
+- healthcare.bronze.nursing_observations
+- healthcare.silver.encounters

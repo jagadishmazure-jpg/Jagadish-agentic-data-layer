@@ -1,0 +1,87 @@
+# Data contract: healthcare.silver.encounters (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.silver.encounters
+version: 1.0.0
+domain: healthcare
+layer: silver
+table: encounters
+kind: conformed
+status: built
+description: 'Inpatient stays: record number, ward, bed, admission and discharge day, admission source, age band and a fall in the last three months. Interface
+  resends are removed; training-environment patients and pre-admission records dated after the extract are quarantined.'
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: confidential
+schema:
+- name: encounter_id
+  type: string
+  nullable: false
+- name: mrn
+  type: string
+  nullable: false
+- name: ward_id
+  type: string
+  nullable: false
+- name: bed
+  type: string
+  nullable: false
+- name: admit_day
+  type: int
+  nullable: false
+- name: discharge_day
+  type: int
+  nullable: true
+- name: admit_source
+  type: string
+  nullable: false
+- name: age_band
+  type: string
+  nullable: false
+- name: prior_fall_3m
+  type: bool
+  nullable: false
+primary_key: &id001
+- encounter_id
+quality:
+- check: unique
+  columns: *id001
+- check: regex
+  column: encounter_id
+  pattern: ENC-\d{6}
+- check: regex
+  column: mrn
+  pattern: HV\d{7}
+- check: range
+  column: admit_day
+  min: 0
+  max: 179
+- check: accepted_values
+  column: admit_source
+  values:
+  - emergency
+  - elective
+  - transfer
+- check: accepted_values
+  column: age_band
+  values:
+  - 18-49
+  - 50-64
+  - 65-74
+  - 75-84
+  - 85+
+- check: referential
+  column: ward_id
+  ref: healthcare.silver.wards.ward_id
+- check: freshness
+  column: admit_day
+- check: row_count_min
+  value: 3000
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+  max_quarantine_pct: 1.0
+inputs:
+- healthcare.bronze.adt_admissions
+- healthcare.bronze.adt_discharges
+- healthcare.silver.wards

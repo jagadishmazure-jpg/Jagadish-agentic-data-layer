@@ -1,0 +1,47 @@
+# Data contract: healthcare.silver.interventions (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.silver.interventions
+version: 1.0.0
+domain: healthcare
+layer: silver
+table: interventions
+kind: conformed
+status: built
+description: Preventive measures in place per patient and day (bed alarm, hourly rounding, sitter) and mobility aids given.
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: confidential
+schema:
+- name: encounter_id
+  type: string
+  nullable: false
+- name: day
+  type: int
+  nullable: false
+- name: measure
+  type: string
+  nullable: false
+primary_key: &id001
+- encounter_id
+- day
+- measure
+quality:
+- check: unique
+  columns: *id001
+- check: referential
+  column: encounter_id
+  ref: healthcare.silver.encounters.encounter_id
+- check: accepted_values
+  column: measure
+  values:
+  - bed_alarm
+  - hourly_rounding
+  - mobility_aid
+  - sitter
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+inputs:
+- healthcare.bronze.interventions
+- healthcare.silver.encounters

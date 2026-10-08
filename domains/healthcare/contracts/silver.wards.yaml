@@ -1,0 +1,42 @@
+# Data contract: healthcare.silver.wards (owner: clinical-data). Synthetic, PHI-free data. Validated by adl.core.contracts in CI.
+id: healthcare.silver.wards
+version: 1.0.0
+domain: healthcare
+layer: silver
+table: wards
+kind: conformed
+status: built
+description: Inpatient wards and the region (site) each belongs to; the gateway uses it for row-level security.
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: internal
+schema:
+- name: ward_id
+  type: string
+  nullable: false
+- name: name
+  type: string
+  nullable: false
+- name: region
+  type: string
+  nullable: false
+- name: beds
+  type: int
+  nullable: false
+primary_key: &id001
+- ward_id
+quality:
+- check: unique
+  columns: *id001
+- check: accepted_values
+  column: region
+  values:
+  - north
+  - south
+slo:
+  completeness_pct: 100
+  freshness_days: 365
+inputs:
+- healthcare.bronze.wards
