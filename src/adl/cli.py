@@ -24,6 +24,8 @@ adl mcp --identity I | mcp-demo
 adl a2a-demo
 adl mortgage STEP [--out F] the mortgage domain: run, quality, lineage, metrics, value-case, risk, retrieval,
                             access, agents, injection, value, focus, gate
+adl insurance STEP [--out F] the insurance domain: run, quality, lineage, metrics, value-case, models, retrieval,
+                            access, agents, injection, value, fairness, focus, gate
 adl gate                    release gate for every built domain (exit 1 on any failure)
 """
 
@@ -649,10 +651,21 @@ def cmd_mortgage(a) -> int:
     return report.main(a.step, a.out)
 
 
-def all_gate_checks() -> list[tuple[str, bool, str]]:
-    from adl.domains.mortgage import report
+def cmd_insurance(a) -> int:
+    from adl.domains.insurance import report
 
-    return [(f"retail: {n}", ok, d) for n, ok, d in gate_checks()] + [(f"mortgage: {n}", ok, d) for n, ok, d in report.gate_checks()]
+    return report.main(a.step, a.out)
+
+
+def all_gate_checks() -> list[tuple[str, bool, str]]:
+    from adl.domains.insurance import report as ins
+    from adl.domains.mortgage import report as mtg
+
+    return (
+        [(f"retail: {n}", ok, d) for n, ok, d in gate_checks()]
+        + [(f"mortgage: {n}", ok, d) for n, ok, d in mtg.gate_checks()]
+        + [(f"insurance: {n}", ok, d) for n, ok, d in ins.gate_checks()]
+    )
 
 
 def cmd_gate(a) -> int:
@@ -705,6 +718,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("step", choices=STEPS)
     p.add_argument("--out", help="for focus: write the FOCUS CSV here")
     p.set_defaults(fn=cmd_mortgage)
+    p = sub.add_parser("insurance")
+    from adl.domains.insurance.report import STEPS as INSURANCE_STEPS
+
+    p.add_argument("step", choices=INSURANCE_STEPS)
+    p.add_argument("--out", help="for focus: write the FOCUS CSV here")
+    p.set_defaults(fn=cmd_insurance)
     p = sub.add_parser("mcp")
     p.add_argument("--identity", default="agent:store-copilot-north")
     p.set_defaults(fn=cmd_mcp)
