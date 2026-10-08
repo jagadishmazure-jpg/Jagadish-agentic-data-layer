@@ -1,0 +1,43 @@
+# Agent identities and what each may read through the data gateway (adl.core.access).
+# In Azure each identity is a Microsoft Entra ID agent identity / managed identity; here they are names.
+# products: data products (gold, agent_exposed contracts) plus "knowledge" for the knowledge layer.
+# purposes: must also be allowed by the product's contract; prohibited purposes are always refused.
+# rows: row-level scope. region limits rows to that region's stores; omitted means every store.
+# deny_columns: column-level security per product.
+identities:
+  agent:replenishment:
+    description: Proposes purchase orders and transfers for every store.
+    products: [sales_daily, inventory_position, supplier_performance, promo_plan, demand_forecast, stockout_risk, store_notes, knowledge]
+    purposes: [replenishment]
+    max_rows: 500
+  agent:markdown:
+    description: Proposes markdowns on near-date stock for every store.
+    products: [sales_daily, inventory_position, markdown_candidates, demand_forecast, promo_plan, knowledge]
+    purposes: [markdown_optimisation]
+    max_rows: 500
+  agent:store-copilot-north:
+    description: Answers store managers in the north region.
+    products: [sales_daily, inventory_position, stockout_risk, store_notes, knowledge]
+    purposes: [store_operations]
+    rows: {region: [north]}
+    deny_columns: {sales_daily: [cogs_usd], inventory_position: [unit_cost]}
+    max_rows: 200
+  agent:store-copilot-south:
+    description: Answers store managers in the south region.
+    products: [sales_daily, inventory_position, stockout_risk, store_notes, knowledge]
+    purposes: [store_operations]
+    rows: {region: [south]}
+    deny_columns: {sales_daily: [cogs_usd], inventory_position: [unit_cost]}
+    max_rows: 200
+  agent:insights:
+    description: Produces aggregate performance and loyalty-segment reports.
+    products: [customer_segments, sales_daily]
+    purposes: [performance_reporting, customer_insight_aggregate]
+    max_rows: 500
+  agent:finance:
+    description: Reports business value from the value ledger.
+    products: [value_ledger, sales_daily]
+    purposes: [value_reporting, performance_reporting]
+    max_rows: 500
+knowledge:
+  allowed_purposes: [replenishment, markdown_optimisation, store_operations, performance_reporting, supplier_management]

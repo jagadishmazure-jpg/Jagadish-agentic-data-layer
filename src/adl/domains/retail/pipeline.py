@@ -102,7 +102,7 @@ GOLD_SQL = {
     "inventory_position": """
         WITH oo AS (SELECT store_id, sku, sum(qty_ordered) AS on_order FROM silver.purchase_orders WHERE received_day IS NULL GROUP BY ALL),
              a AS (SELECT store_id, sku, avg(units) AS avg28 FROM silver.pos_sales WHERE day > {as_of} - 28 GROUP BY ALL)
-        SELECT i.store_id, st.region, i.sku, pr.category, CAST({as_of} AS BIGINT) AS as_of_day, i.on_hand_end AS on_hand,
+        SELECT i.store_id, st.region, i.sku, pr.category, pr.supplier_id, pr.case_pack, pr.shelf_life_days, pr.unit_cost, pr.list_price, CAST({as_of} AS BIGINT) AS as_of_day, i.on_hand_end AS on_hand,
                CAST(coalesce(oo.on_order, 0) AS BIGINT) AS on_order, i.near_expiry_units, round(a.avg28, 3) AS avg_daily_units_28d,
                round(i.on_hand_end / greatest(a.avg28, 0.1), 2) AS days_of_cover
         FROM silver.inventory i JOIN silver.products pr USING (sku) JOIN silver.stores st USING (store_id)

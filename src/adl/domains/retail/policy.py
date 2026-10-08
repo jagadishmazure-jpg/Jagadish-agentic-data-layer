@@ -33,6 +33,57 @@ def load_policy(path: Path | None = None) -> dict:
     return yaml.safe_load((path or ROOT / "config/policy.yaml").read_text())
 
 
+def order_quantity(
+    fc: np.ndarray,
+    lead: np.ndarray,
+    cv: np.ndarray,
+    z: np.ndarray,
+    position: np.ndarray,
+    perishable: np.ndarray,
+    shelf: np.ndarray,
+    pack: np.ndarray,
+    cfg: dict,
+) -> np.ndarray:
+    """Units to order tonight per series. Shared by the simulation and today's proposals."""
+    horizon = fc.shape[1]
+    cover = np.minimum(lead + cfg["replenishment"]["review_days"], horizon)
+    h = np.arange(horizon)[None, :]
+    in_cover = h < cover[:, None]
+    mu = (fc * in_cover).sum(1)
+    sd = np.sqrt((((cv[:, None] * fc) ** 2) * in_cover).sum(1) + mu)
+    q = mu + z * sd - position
+    if cfg["replenishment"]["cap_perishable_to_shelf_life"]:
+        life = (h >= lead[:, None]) & (h < (lead + shelf - 1)[:, None])
+        q = np.where(perishable, np.minimum(q, (fc * life).sum(1)), q)
+    mode = np.where(perishable, "round", "up")
+    return np.where(q > 0, round_to_pack(q, pack, mode), 0.0)
+
+
+def plan_transfers(groups: list[np.ndarray], short: np.ndarray, excess: np.ndarray, min_units: int) -> tuple[np.ndarray, np.ndarray]:
+    """Greedy same-group matching: biggest shortfall first, from the biggest surplus first."""
+    short, excess = short.copy(), excess.copy()
+    out, inn = np.zeros(len(short)), np.zeros(len(short))
+    for idx in groups:
+        if len(idx) < 2:
+            continue
+        recv = [i for i in idx[np.argsort(-short[idx], kind="stable")] if short[i] >= min_units]
+        give = [i for i in idx[np.argsort(-excess[idx], kind="stable")] if excess[i] >= min_units]
+        for i in recv:
+            for j in give:
+                if i == j or excess[j] < min_units:
+                    continue
+                qty = np.floor(min(short[i], excess[j]))
+                if qty < min_units:
+                    continue
+                out[j] += qty
+                inn[i] += qty
+                excess[j] -= qty
+                short[i] -= qty
+                if short[i] < min_units:
+                    break
+    return out, inn
+
+
 class AgentPolicy:
     def __init__(
         self,
@@ -61,7 +112,7 @@ class AgentPolicy:
         self.replenish, self.mark_down, self.transfer = replenish, mark_down, transfer
         self.transfer = transfer and self.cfg["transfers"]["enabled"]
         self._fc: dict[int, np.ndarray] = {}
-        self.legacy = None
+        self._groups: list[np.ndarray] | None = None
 
     # ------------------------------------------------------------------ forecasts in world order
     def level(self, st, t: int) -> np.ndarray:
@@ -90,20 +141,7 @@ class AgentPolicy:
             from adl.domains.retail.world import LegacyPolicy
 
             return LegacyPolicy().order(world, cal, st, t)
-        fc = self.forecast(st, t)
-        cover = np.minimum(self.lead + self.cfg["replenishment"]["review_days"], MAX_H)
-        h = np.arange(MAX_H)[None, :]
-        in_cover = h < cover[:, None]
-        mu = (fc * in_cover).sum(1)
-        sd = np.sqrt((((self.cv[:, None] * fc) ** 2) * in_cover).sum(1) + mu)
-        target = mu + self.z * sd
-        q = target - st.position()
-        if self.cfg["replenishment"]["cap_perishable_to_shelf_life"]:
-            life = (h >= self.lead[:, None]) & (h < (self.lead + world.shelf - 1)[:, None])
-            cap = (fc * life).sum(1)
-            q = np.where(world.perishable, np.minimum(q, cap), q)
-        mode = np.where(world.perishable, "round", "up")
-        return np.where(q > 0, round_to_pack(q, world.pack, mode), 0.0)
+        return order_quantity(self.forecast(st, t), self.lead, self.cv, self.z, st.position(), world.perishable, world.shelf, world.pack, self.cfg)
 
     def transfers(self, world, cal, st, t):
         z = np.zeros(world.n)
@@ -120,27 +158,10 @@ class AgentPolicy:
         need_cover = (fc * (np.arange(MAX_H)[None, :] < cover[:, None])).sum(1)
         excess = np.maximum(on_hand - 1.2 * need_cover, 0.0)
         eligible = (~world.perishable) | (world.shelf >= 5)
-        out, inn = z.copy(), z.copy()
-        n_sku = len(world.skus)
-        min_units = self.cfg["transfers"]["min_units"]
-        for k in range(n_sku):
-            for r in range(len({s["region"] for s in world.stores})):
-                idx = np.nonzero((world.sku_of == k) & (world.region_of == r) & eligible)[0]
-                if len(idx) < 2:
-                    continue
-                recv = [i for i in idx[np.argsort(-short[idx], kind="stable")] if short[i] >= min_units]
-                give = [i for i in idx[np.argsort(-excess[idx], kind="stable")] if excess[i] >= min_units]
-                for i in recv:
-                    for j in give:
-                        if i == j or excess[j] < min_units:
-                            continue
-                        qty = np.floor(min(short[i], excess[j]))
-                        if qty < min_units:
-                            continue
-                        out[j] += qty
-                        inn[i] += qty
-                        excess[j] -= qty
-                        short[i] -= qty
-                        if short[i] < min_units:
-                            break
-        return out, inn
+        if self._groups is None:
+            self._groups = [
+                np.nonzero((world.sku_of == k) & (world.region_of == r) & eligible)[0]
+                for k in range(len(world.skus))
+                for r in range(int(world.region_of.max()) + 1)
+            ]
+        return plan_transfers(self._groups, short, excess, self.cfg["transfers"]["min_units"])

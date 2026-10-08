@@ -1,0 +1,25 @@
+# Phase 0: the value case, written before any model. The business problem, the KPIs with their baseline
+# source and target, and the value tree that links data to money (MIT CISR's five steps). `adl value-case`
+# measures the baseline from gold.sales_daily through the metrics layer; `adl value` reports the simulated
+# result against these targets, including any target that is missed.
+use_case: retail-stockout-markdown
+domain: retail
+business_problem: >-
+  Wrenfield Grocers loses sales when shelves empty and gives margin away when near-date stock is thrown
+  away or marked down too deeply. Orders follow last week's sales and markdowns are a flat 30%.
+sponsor: Head of merchandising (fictional role)
+decision_owners: [store managers, regional operations managers, category managers]
+measurement_window_days: 28
+kpis:
+  # target_change_pct is relative to the measured baseline over the same window length
+  - {metric: stockout_rate_pct, direction: down, target_change_pct: -20, why: "fewer empty shelves at close"}
+  - {metric: lost_sales_usd, direction: down, target_change_pct: -25, why: "demand served instead of lost"}
+  - {metric: markdown_usd, direction: down, target_change_pct: -15, why: "margin kept on near-date stock"}
+  - {metric: waste_cost_usd, direction: down, target_change_pct: -20, why: "less stock thrown away"}
+  - {metric: gross_margin_usd, direction: up, target_change_pct: 3, why: "the bottom line the levers add up to"}
+value_tree:
+  collect: [POS sales, stock and waste, purchase orders and receipts, promotions, prices and price tests, weather, local events, loyalty segments, store notes]
+  insights: [demand forecast, stockout risk, price elasticity, markdown response, supplier lead-time reliability]
+  actions: [purchase orders, inter-store transfers, markdowns]
+  value: [lost sales recovered, markdown dollars saved, waste reduced]
+  monetise: [gross margin after waste, cost per outcome including AI and platform cost, FOCUS cost export to FinOps]

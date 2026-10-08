@@ -1,0 +1,22 @@
+# Assumed unit rates for the cost-per-outcome estimate. These are placeholders chosen to be in the
+# right order of magnitude, NOT quotes: check current rates for your region with the Azure Retail Prices
+# API (the Jagadish-azure-finops repository has a client for it) before using the numbers.
+currency: USD
+model:
+  name: small chat model on Microsoft Foundry, pay-as-you-go (assumed rate)
+  input_per_million_tokens: 0.40
+  output_per_million_tokens: 1.60
+  briefs_per_store_per_day: 1
+compute:
+  name: Azure Container Apps consumption for the agents and nightly jobs (assumed rate)
+  vcpu_second: 0.000024
+  gib_second: 0.000003
+  vcpu: 1
+  gib: 2
+  seconds_per_day: 900
+search:
+  name: Azure AI Search Basic (assumed rate)
+  per_month: 75.0
+storage:
+  name: ADLS Gen2 hot LRS plus transactions (assumed rate)
+  per_month: 5.0

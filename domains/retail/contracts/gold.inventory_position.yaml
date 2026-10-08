@@ -14,6 +14,11 @@ schema:
 - {name: region, type: string, nullable: false}
 - {name: sku, type: string, nullable: false}
 - {name: category, type: string, nullable: false}
+- {name: supplier_id, type: string, nullable: false}
+- {name: case_pack, type: int, nullable: false}
+- {name: shelf_life_days, type: int, nullable: false}
+- {name: unit_cost, type: float, nullable: false}
+- {name: list_price, type: float, nullable: false}
 - {name: as_of_day, type: int, nullable: false}
 - {name: on_hand, type: int, nullable: false}
 - {name: on_order, type: int, nullable: false}
