@@ -21,7 +21,9 @@ SECTIONS = [
     "Real output", "Tests and gates", "Guardrails", "Security and governance", "Observability",
     "Failure modes", "Mapping to cloud services", "Limitations", "Interview talking points",
 ]  # fmt: skip
-FULL_DOCS = sorted(p for d in ("components", "infra", "mortgage", "insurance", "healthcare") for p in (ROOT / "docs" / d).glob("*.md") if p.name != "README.md")
+FULL_DOCS = sorted(
+    p for d in ("components", "infra", "mortgage", "insurance", "healthcare") for p in (ROOT / "docs" / d).glob("*.md") if p.name != "README.md"
+)
 SERVICES = ("Microsoft Fabric", "Entra ID", "BigQuery", "S3")
 MONTHS = r"\b(January|February|March|April|June|July|August|September|October|November|December)\b"
 SUFFIXES = {".md", ".py", ".json", ".yml", ".yaml", ".tf", ".bicep", ".hcl", ".sh", ".toml", ".jsonl", ".tfvars"}

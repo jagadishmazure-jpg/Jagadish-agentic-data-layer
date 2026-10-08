@@ -1,6 +1,6 @@
 # domains
 
-Data definitions per business domain: contracts, metrics and knowledge. Code lives in `src/adl/domains/`. Three domains are built; one is planned.
+Data definitions per business domain: contracts, metrics and knowledge. Code lives in `src/adl/domains/`. All four domains are built.
 
 | File | What it does |
 |---|---|

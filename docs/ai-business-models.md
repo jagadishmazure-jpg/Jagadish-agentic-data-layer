@@ -50,3 +50,11 @@ The insurance domain (Ferrowind Insurance) starts at Existing+ too: the same adj
 and subrogation unit, spent on the claims where they pay most, with a fairness monitor alongside. Its
 Customer Proxy, Modular Creator and Orchestrator steps are mapped in
 [insurance/README.md](insurance/README.md#business-model-mapping-mit-cisr).
+
+## Healthcare
+
+The healthcare domain (Halsey Vale Health, fully synthetic and PHI-free) starts at Existing+ as well:
+the same alarm units, rounding rota, sitters and mobility aids, given to the patients who gain most and
+approved by the nurse in charge, with a fairness monitor alongside. Its Customer Proxy, Modular Creator
+and Orchestrator steps are mapped in
+[healthcare/README.md](healthcare/README.md#business-model-mapping-mit-cisr).

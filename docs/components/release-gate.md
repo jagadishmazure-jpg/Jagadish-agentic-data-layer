@@ -1,7 +1,7 @@
 # Component: release gate
 
-Thirty-eight checks that must all pass before a change ships: 15 for retail, 11 for mortgage and 12 for
-insurance, covering data, models, retrieval, access, injection, approvals, value, fairness reporting and adapters. `adl gate` exits 1 on any failure and CI runs it on every
+Fifty-one checks that must all pass before a change ships: 15 for retail, 11 for mortgage, 12 for
+insurance and 13 for healthcare, covering data, models, retrieval, access, injection, approvals, value, fairness reporting and adapters. `adl gate` exits 1 on any failure and CI runs it on every
 push.
 
 ## 1. Purpose
@@ -13,7 +13,7 @@ push.
 
 ```mermaid
 flowchart LR
-  D[data: contracts, quality, lineage] --> G{38 checks}
+  D[data: contracts, quality, lineage] --> G{51 checks}
   M[models: forecast, stockout, retrieval] --> G
   S[safety: attacks, PII, audit, injection, approvals] --> G
   V[value: interval, KPI report, adapters] --> G
@@ -35,6 +35,7 @@ the rule, interval above zero) so they do not need retuning when the data change
 | `src/adl/cli.py` | `gate_checks`, `all_gate_checks` and `cmd_gate` |
 | `src/adl/domains/mortgage/report.py` | The 11 mortgage checks |
 | `src/adl/domains/insurance/report.py` | The 12 insurance checks, including fairness results reported |
+| `src/adl/domains/healthcare/report.py` | The 13 healthcare checks, including nurse approval for every measure and nursing-only action kinds |
 | `.github/workflows/ci.yml` | Runs `adl gate` on every push and pull request |
 | `tests/test_cli.py` | `test_release_gate_passes` |
 
@@ -196,10 +197,12 @@ own step so a failure is visible by name.
 
 ## 11. Security and governance
 
-Thirteen of the 38 checks are security checks (retail: attacks, PII, audit chain, injected actions,
-injection reaching the approver; mortgage and insurance: attacks, PII, audit chain, injected actions) and
-three are governance checks (person approval above thresholds, one per domain). Insurance adds a check
-that the fairness screen is reported, hit or miss.
+Seventeen of the 51 checks are security checks (retail: attacks, PII, audit chain, injected actions,
+injection reaching the approver; mortgage, insurance and healthcare: attacks, PII or patient identifiers,
+audit chain, injected actions) and five are governance checks (person approval above thresholds in
+retail, mortgage and insurance; in healthcare, every measure approved by a person and only nursing
+measures proposed or executed). Insurance and healthcare add a check that the fairness screen is
+reported, hit or miss.
 
 ## 12. Observability
 

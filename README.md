@@ -5,8 +5,10 @@ a bronze/silver/gold lakehouse, governed metrics, forecasting and risk models, a
 data gateway that AI agents must go through (exposed over MCP and A2A), a Microsoft Agent Framework
 workflow with human approval, and a value ledger that says what the agents are worth after their own
 cost. The first domain is retail, for **Wrenfield Grocers**, a fictional eight-store grocer. The second
-is mortgage, for **Quillmere Home Loans**, a fictional six-branch lender, and the third is insurance,
-for **Ferrowind Insurance**, a fictional six-office claims operation, both built on the same platform.
+is mortgage, for **Quillmere Home Loans**, a fictional six-branch lender; the third is insurance, for
+**Ferrowind Insurance**, a fictional six-office claims operation; and the fourth is healthcare, for
+**Halsey Vale Health**, a fictional two-site hospital, on fully synthetic, PHI-free data. All four are
+built on the same platform and all four are complete.
 
 The structure follows the MIT Sloan article
 [What leaders still get wrong about AI](https://mitsloan.mit.edu/ideas-made-to-matter/what-leaders-still-get-wrong-about-ai)
@@ -44,10 +46,20 @@ is gated off.
   spread are missed, and the triage lever adds nothing measurable. An unfair-discrimination screen
   across synthetic postcode groups finds every ratio inside the 0.80 to 1.25 band; see
   [docs/insurance](docs/insurance/README.md).
+* **Fourth domain, healthcare (fully synthetic, PHI-free data):** inpatient fall prevention. A
+  fall-risk model (**not a medical device**) beats the Morse total (AUC 0.650 against 0.506; 56.2% of
+  falls caught at the same capacity against 32.4%). The assistant may only propose four nursing
+  measures (bed alarm, hourly rounding, mobility aid, sitter request), the nurse in charge approves
+  every one, and nothing clinical can be proposed. It adds **$189,002 net value** per 28 days (95%
+  interval $171,462 to $205,593), but most of that is booking no sitters, which raises falls; with
+  sitters kept as today it adds $36,666 and cuts falls 27.7 to 24.0. It meets **1 of 4** KPI targets
+  (falls -7.5% against -20%, falls with harm and days to first measure are also missed). The gateway
+  applies minimum-necessary access with per-identity masking and purpose limits; see
+  [docs/healthcare](docs/healthcare/README.md).
 * **Safety:** in each domain 14 of 14 access attacks stopped, 0 personal-data rows in anything an agent can read, a
   hash-chained audit log that detects tampering, and no injected instruction ever executed in any of
   4 defence configurations.
-* **Quality:** **566 automated tests**, a 38-check release gate (15 retail, 11 mortgage, 12 insurance), ruff, CodeQL, gitleaks, an SBOM,
+* **Quality:** **666 automated tests**, a 51-check release gate (15 retail, 11 mortgage, 12 insurance, 13 healthcare), ruff, CodeQL, gitleaks, an SBOM,
   checkov, tflint and Terraform tests on every push.
 * **Stack:** Python 3.13, DuckDB, Delta Lake, Microsoft Agent Framework, MCP, A2A, Terraform, Bicep,
   GitHub Actions with OIDC.
@@ -59,15 +71,15 @@ is gated off.
 | Retail domain (Wrenfield Grocers): 25 contracts, pipeline, models, agents, value ledger | **Built**, runs offline | `src/adl/domains/retail/` |
 | Mortgage domain (Quillmere Home Loans): 15 contracts, pipeline, fallout model, agents, value ledger | **Built**, runs offline; in-process gateway only (no MCP or A2A yet) | `src/adl/domains/mortgage/`, [docs/mortgage](docs/mortgage/README.md) |
 | Insurance domain (Ferrowind Insurance): 18 contracts, pipeline, claim models, agents, value ledger, fairness screen | **Built**, runs offline; in-process gateway only (no MCP or A2A yet) | `src/adl/domains/insurance/`, [docs/insurance](docs/insurance/README.md) |
-| Shared approval workflow, FOCUS cost module and logistic model used by mortgage and insurance | **Built** | `src/adl/core/agentflow.py`, `src/adl/core/finops.py`, `src/adl/core/logit.py` |
-| Healthcare (Halsey Vale Health) | **Planned**: use case, KPIs, levers and 3 contracts; no pipeline | `domains/healthcare/` |
+| Healthcare domain (Halsey Vale Health, fully synthetic and PHI-free): 15 contracts, pipeline, fall-risk model, nursing-only agents, value ledger, fairness check | **Built**, runs offline; in-process gateway only (no MCP or A2A yet); not a medical device | `src/adl/domains/healthcare/`, [docs/healthcare](docs/healthcare/README.md) |
+| Shared approval workflow, FOCUS cost module and logistic model used by mortgage, insurance and healthcare; optional column masking in the gateway | **Built** | `src/adl/core/agentflow.py`, `src/adl/core/finops.py`, `src/adl/core/logit.py`, `src/adl/core/access.py` |
 | Local storage (Delta Lake + DuckDB) | **Built**, the only adapter run end to end | `src/adl/storage/local.py` |
 | Fabric OneLake, Azure Databricks, BigQuery, S3 + Glue + Athena adapters | **Written, not run** against a real account; tested with fake clients | `src/adl/storage/` |
 | Azure AI Search knowledge adapter, Foundry model client, Prompt Shields request | **Written, not run**; the offline index, mock model and regex screen are used | `src/adl/knowledge/`, `src/adl/core/` |
 | MCP server and A2A endpoint | **Built**, exercised in-memory; not hosted | `src/adl/serve/` |
 | Terraform (Azure, GCP, AWS) and Bicep | **Written, not run**: validate, test, lint and checkov in CI; never applied | `infra/` |
 | Deploy and teardown workflows with OIDC | **Written, not run**: gated by `DEPLOY_ENABLED`, which is off | `.github/workflows/` |
-| Live executor (ERP orders, shelf prices, loan origination system, claims system), Microsoft Purview registration | **Planned** | [docs/roadmap.md](docs/roadmap.md) |
+| Live executor (ERP orders, shelf prices, loan origination system, claims system, nursing task list), Microsoft Purview registration | **Planned** | [docs/roadmap.md](docs/roadmap.md) |
 
 The four organisations are fictional; any resemblance to a real company is accidental. No real
 employer or client data or name is used anywhere.
@@ -120,13 +132,15 @@ sit side by side.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-adl domains        # four domains, three built
+adl domains        # four domains, all four built
 adl run            # bronze -> silver -> gold, quality per product
 adl value          # the value ledger with intervals, KPI targets, cost per outcome
 adl mortgage value # the mortgage value ledger (adl mortgage --help lists every step)
 adl insurance value     # the insurance value ledger
 adl insurance fairness  # the unfair-discrimination screen across synthetic proxy groups
-adl gate           # the 38-check release gate for the three built domains
+adl healthcare value    # the healthcare value ledger (synthetic, PHI-free)
+adl healthcare fairness # measures and fall rates across synthetic patient groups
+adl gate           # the 51-check release gate for the four built domains
 pytest -q          # the full test suite
 ```
 
@@ -218,6 +232,30 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 | Create value | Paired forward simulation from the real end-of-history claims state | +$274,527 net value per 28 days, interval [$249,068, $299,963] |
 | Monetise | Value after AI and platform cost; FOCUS cost rows | $0.28 of cost per $1,000 of value; 112 FOCUS rows |
 
+## All four domains at a glance
+
+Every number below is from a real run of the CLI on synthetic data (30 paired replications of 28 days,
+95% bootstrap intervals); KPI targets were committed before any result in each domain.
+
+| Domain | Decision | Model vs naive baseline | Net value per 28 days (95% interval) | KPI targets met | Fairness screen |
+|---|---|---|---|---|---|
+| Retail (Wrenfield Grocers) | Orders and markdowns | forecast WAPE 31.9% vs 35.8% (best naive); stockout F1 39.8% vs 25.8% (cover rule) | +$9,678 ($9,531 to $9,830) | 4 of 5 | Not built |
+| Mortgage (Quillmere Home Loans) | Outreach, document chase, lock extension | fallout AUC 0.730 vs 0.462 (closest-to-expiry rule) | +$193,003 ($171,585 to $214,486) | 1 of 4 | Not built |
+| Insurance (Ferrowind Insurance) | Queue, leakage review, subrogation referral | subrogation AUC 0.962 vs 0.708 (intake flag); leakage 0.762 vs 0.527 (largest first) | +$274,527 ($249,068 to $299,963) | 1 of 4 | All within band |
+| Healthcare (Halsey Vale Health) | Bed alarm, rounding, mobility aid, sitter request | fall-risk AUC 0.650 vs 0.506 (Morse total) | +$189,002 ($171,462 to $205,593); +$36,666 with sitters kept as today | 1 of 4 | All within limits |
+
+## Healthcare in five steps
+
+> Fully synthetic, PHI-free data; the fall-risk model is not a medical device.
+
+| Step (MIT CISR) | In this repository | Real number |
+|---|---|---|
+| Collect the right data | 9 source feeds landed as bronze, conformed to 9 silver tables under contract; identity split into a restricted table | 131,832 bronze rows; 30 admission resends and 40 resent observations removed; 22 rows quarantined |
+| Generate insights | Three-day fall risk from what the ward records each morning; hybrid retrieval | AUC 0.650 vs 0.506 for the Morse total; 56.2% vs 32.4% of falls caught at 90 patients a morning |
+| Take action | Four nursing measures only; every one waits for the nurse in charge | 155 actions, 155 sent to a person, 7 rejected, 148 dry-run executions |
+| Create value | Paired forward simulation from the real end-of-history ward state | +$189,002 net value per 28 days, interval [$171,462, $205,593]; mostly from booking no sitters |
+| Monetise | Value after AI and platform cost; FOCUS cost rows | $0.40 of cost per $1,000 of value; 112 FOCUS rows |
+
 ## What is honest about the numbers
 
 * The world is synthetic, so the value is a simulation result, not a measured business result. The
@@ -241,6 +279,17 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 * The insurance fairness check is a screening heuristic on synthetic groups, not a legal test. Every
   ratio is inside the band, but the agent fast-tracks one group measurably less than today's rules do
   (ratio 0.931 against 0.984).
+* Healthcare is fully synthetic and PHI-free, and the fall-risk model is not a medical device. I
+  calibrated the world once for learnable signal (more wards, stronger delirium and sedation effects)
+  before running any policy; the first version gave AUC 0.54.
+* Most of the healthcare headline (+$155,669 of +$189,002) comes from booking no sitters, which raises
+  falls (+$19,033 fall cost). The variant with sitters kept as today is worth +$36,666 with fewer falls,
+  and is the one I would recommend.
+* Healthcare misses three of four KPI targets: falls per 1,000 bed-days -7.5% (target -20%), falls with
+  harm -3.7% (target -25%, interval spans zero) and days to first measure -5.0% (target -30%). The sitter
+  target (-10%) is met only by using no sitters at all.
+* The healthcare model's Brier score barely beats the base rate (0.00751 against 0.00755): it ranks
+  patients better than the Morse score but its probabilities are not clinical risks.
 * Cost uses assumed unit rates in `config/pricing.yaml`, not quotes.
 
 ## Documentation
@@ -254,6 +303,7 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 | Every component in depth | [docs/components/README.md](docs/components/README.md) and [docs/infra/README.md](docs/infra/README.md) |
 | The mortgage domain | [docs/mortgage/README.md](docs/mortgage/README.md) |
 | The insurance domain | [docs/insurance/README.md](docs/insurance/README.md) |
+| The healthcare domain (synthetic, PHI-free) | [docs/healthcare/README.md](docs/healthcare/README.md) |
 | Decisions | [docs/adr/README.md](docs/adr/README.md) |
 
 ## Repository layout
@@ -264,6 +314,7 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 | `src/adl/domains/retail/` | Retail (built): simulator, pipeline, models, agents, value |
 | `src/adl/domains/mortgage/` | Mortgage (built): simulator, pipeline, fallout model, agents, value |
 | `src/adl/domains/insurance/` | Insurance (built): simulator, pipeline, claim models, agents, value, fairness screen |
+| `src/adl/domains/healthcare/` | Healthcare (built, synthetic and PHI-free): ward simulator, pipeline, fall-risk model, nursing-only agents, value, fairness check |
 | `src/adl/knowledge/` | Embeddings, knowledge graph, retrieval, Azure AI Search adapter |
 | `src/adl/serve/` | MCP server and A2A endpoint |
 | `src/adl/storage/` | Local Delta Lake adapter and the four cloud adapters |

@@ -20,16 +20,20 @@
 | GraphRAG local search | Retrieval that links a question to entities and follows their relationships to find documents. |
 | Hash chain | Each audit record stores the hash of the previous one, so edits break verification. |
 | Hybrid retrieval | Reciprocal rank fusion of vector and graph rankings. |
+| Masked column | A column the gateway returns to one identity as a stable per-identity token (`MASK-...`) instead of the value; the identity cannot filter on it. Used for the patient key in healthcare. |
+| Minimum necessary | Giving each identity only the products, columns, rows and purposes its job needs; the HIPAA idea the healthcare gateway follows in design (no compliance claim, no real PHI). |
 | k-anonymity | Suppressing groups smaller than k (10 here) so no row describes an individual. |
+| Morse Fall Scale | The nursing fall-risk score the simulated wards use today (six items, high risk from 45); the healthcare baseline. |
 | MAF | Microsoft Agent Framework: agents, chat clients and graph workflows with human-in-the-loop requests. |
 | MCP | Model Context Protocol: tools a model client can call. Here five read-only tools over the gateway. |
 | Markdown | A price reduction on near-date stock. |
 | MRR, nDCG, recall@k | Retrieval measures: rank of the first relevant document, ranking quality, and the share of relevant documents in the top k. |
 | OIDC | OpenID Connect federation: CI exchanges a short-lived token for cloud credentials, so no secret is stored. |
 | OpenLineage | Open standard for lineage run events (START, COMPLETE, FAIL) with input and output datasets. |
+| PHI | Protected health information. The healthcare domain contains none: every patient and record is synthetic. |
 | Pseudonym | HMAC of a customer id with a key held by the privacy office. |
 | Quarantine | Rows that fail a row-level contract check, kept in `silver.quarantine_<table>` instead of being dropped. |
-| Release gate | `adl gate`: 38 checks (15 retail, 11 mortgage, 12 insurance) that must all pass. |
+| Release gate | `adl gate`: 51 checks (15 retail, 11 mortgage, 12 insurance, 13 healthcare) that must all pass. |
 | Row scope | Row-level security: the region a copilot may see. |
 | Stockout | A store-product with no stock left at close. |
 | Value ledger | `gold.value_ledger`: value per lever and metric with a 95% interval, ids VL-RET-001 to 012. |

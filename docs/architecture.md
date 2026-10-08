@@ -115,11 +115,11 @@ a dry run that writes what it would do to the audit chain.
 | Data gateway, identities, audit chain, guardrails | The agent workflow nodes and policy |
 | MCP and A2A serving | Value ledger, cost estimate, FOCUS rows |
 | Storage adapters, embeddings, graph, retrieval | Knowledge corpus and aliases |
-| Approval workflow core (`agentflow`), FOCUS cost rows (`finops`) and logistic model (`logit`), used by mortgage and insurance | Retail keeps its original workflow module unchanged |
+| Approval workflow core (`agentflow`), FOCUS cost rows (`finops`) and logistic model (`logit`), used by mortgage, insurance and healthcare; optional column masking in the gateway (healthcare) | Retail keeps its original workflow module unchanged |
 
-Mortgage and then insurance were added on the left column without changing retail's behaviour;
-healthcare will follow the same path. See [adding-a-domain.md](adding-a-domain.md),
-[mortgage/README.md](mortgage/README.md) and [insurance/README.md](insurance/README.md).
+Mortgage, insurance and then healthcare were added on the left column without changing retail's
+behaviour. See [adding-a-domain.md](adding-a-domain.md), [mortgage/README.md](mortgage/README.md),
+[insurance/README.md](insurance/README.md) and [healthcare/README.md](healthcare/README.md).
 
 ## Determinism
 

@@ -45,9 +45,12 @@ The enabler rows are detailed in [operating-model.md](operating-model.md) and
 ## The five steps from data to money (paraphrased)
 
 The article illustrates the five steps (from the book *Data Is Everybody's Business* by Wixom, Beath
-and Owens) with predicting which hospital patients are likely to fall. That is the use case chosen for
-the planned healthcare domain (Halsey Vale Health), so the same five steps will be shown in a second
-industry.
+and Owens) with predicting which hospital patients are likely to fall. That is the use case built in
+the healthcare domain (Halsey Vale Health, fully synthetic and PHI-free), so the same five steps are
+shown in the article's own example: 9 feeds collected under contract, a fall-risk model that beats the
+Morse total (AUC 0.650 against 0.506), four nursing measures each approved by a nurse, a value ledger
+with intervals and a cost per outcome. See [healthcare/README.md](healthcare/README.md) and the
+README's cross-domain table.
 
 | Step | Here | Command |
 |---|---|---|

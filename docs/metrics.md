@@ -552,3 +552,118 @@ all limits met: history True, forward True
 ```
 <!-- /output -->
 
+## Healthcare (Halsey Vale Health)
+
+Fully synthetic, PHI-free data; the fall-risk model is not a medical device. Unedited output;
+explanations are in [healthcare/README.md](healthcare/README.md).
+
+<!-- output: healthcare models -->
+```text
+fall in the next 3 days: 28,513 training and 13,800 test patient-mornings, 105 test mornings followed by a fall (0.76%)
+at capacity: each method picks the top 90 patients each morning (the rounding rota); the rule flags 41.3%
+method                   AUC    precision  recall (falls caught)  Brier
+-----------------------  -----  ---------  ---------------------  -------
+fall-risk model          0.650  1.19%      56.2%                  0.00751
+Morse total              0.506  0.69%      32.4%                  0.00755
+Morse 45 or more (rule)  0.508  0.79%      42.9%                  0.00755
+the rule's precision and recall are for every patient it flags (no capacity); Brier for the Morse rows is the base-rate forecast
+
+gold.fall_risk_worklist: high 1, low 240, medium 4; top drivers: older age band 71, no single driver 44, Morse: forgets limitations 41
+decision support for nursing measures on synthetic data; not a medical device and not validated for clinical use
+```
+<!-- /output -->
+
+<!-- output: healthcare value -->
+```text
+forward simulation: 30 replications x 28 days, common random numbers, paired 95% bootstrap intervals; synthetic, PHI-free data: every patient, record and note is invented
+ledger     lever                        metric          current rules  with agents  change     95% interval
+---------  ---------------------------  --------------  -------------  -----------  ---------  ----------------------
+VL-HC-001  all measures                 net_value       -$582,445      -$393,442    $189,002   [$171,462, $205,593]
+VL-HC-002  all measures                 fall_cost       $314,250       $299,067     -$15,183   [-$31,785, $2,335]
+VL-HC-003  all measures                 harm_fall_cost  $246,000       $237,000     -$9,000    [-$26,000, $8,000]
+VL-HC-004  all measures                 measure_cost    $268,195       $94,376      -$173,819  [-$174,009, -$173,641]
+VL-HC-005  bed alarm                    net_value       -$582,445      -$554,461    $27,983    [$14,883, $40,119]
+VL-HC-006  bed alarm                    fall_cost       $314,250       $286,267     -$27,983   [-$40,119, -$14,883]
+VL-HC-007  bed alarm                    harm_fall_cost  $246,000       $227,000     -$19,000   [-$31,000, -$6,000]
+VL-HC-008  bed alarm                    measure_cost    $268,195       $268,195     $0         [$0, $0]
+VL-HC-009  hourly rounding              net_value       -$582,445      -$567,703    $14,741    [$5,784, $23,628]
+VL-HC-010  hourly rounding              fall_cost       $314,250       $299,467     -$14,783   [-$23,650, -$5,849]
+VL-HC-011  hourly rounding              harm_fall_cost  $246,000       $236,000     -$10,000   [-$18,000, -$2,000]
+VL-HC-012  hourly rounding              measure_cost    $268,195       $268,237     $42        [$13, $80]
+VL-HC-013  mobility aid                 net_value       -$582,445      -$574,748    $7,697     [-$347, $16,445]
+VL-HC-014  mobility aid                 fall_cost       $314,250       $301,150     -$13,100   [-$21,803, -$5,100]
+VL-HC-015  mobility aid                 harm_fall_cost  $246,000       $235,000     -$11,000   [-$19,000, -$3,000]
+VL-HC-016  mobility aid                 measure_cost    $268,195       $273,598     $5,403     [$5,154, $5,657]
+VL-HC-017  sitter request               net_value       -$582,445      -$426,775    $155,669   [$147,220, $163,621]
+VL-HC-018  sitter request               fall_cost       $314,250       $333,283     $19,033    [$11,098, $27,500]
+VL-HC-019  sitter request               harm_fall_cost  $246,000       $262,000     $16,000    [$9,000, $24,000]
+VL-HC-020  sitter request               measure_cost    $268,195       $93,492      -$174,703  [-$174,720, -$174,668]
+VL-HC-021  all measures except sitters  net_value       -$582,445      -$545,779    $36,666    [$21,258, $50,542]
+VL-HC-022  all measures except sitters  fall_cost       $314,250       $276,683     -$37,567   [-$51,502, -$22,264]
+VL-HC-023  all measures except sitters  harm_fall_cost  $246,000       $218,000     -$28,000   [-$42,000, -$13,000]
+VL-HC-024  all measures except sitters  measure_cost    $268,195       $269,096     $901       [$711, $1,079]
+net value is minus the cost of falls and measures at the stated assumptions, so its change is the saving
+
+KPI targets (config/healthcare/value-case.yaml, committed before any build), all measures vs the current rules:
+kpi                        current rules  with agents  change   95% interval of the change  target  result
+-------------------------  -------------  -----------  -------  --------------------------  ------  ------
+falls_per_1000_bed_days    3.21           2.97         -7.5%    [-0.37, -0.10]              -20%    MISSED
+harm_falls                 8.20           7.90         -3.7%    [-0.87, +0.27]              -25%    MISSED
+time_to_intervention_days  2.18           2.07         -5.0%    [-0.16, -0.06]              -30%    MISSED
+sitter_shifts              335.97         0.00         -100.0%  [-336.00, -335.90]          -10%    met
+
+activity per 28 days (mean of replications):
+arm                      falls  harm_falls  bed_alarm_days  rounding_days  aid_starts  sitter_shifts
+-----------------------  -----  ----------  --------------  -------------  ----------  -------------
+current rules            27.7   8.2         1,680.0         2,518.5        62.5        336.0
+agent                    25.6   7.9         1,680.0         2,520.0        81.2        0.0
+bed alarm only           24.5   7.6         1,680.0         2,518.5        62.5        336.0
+rounding only            26.0   7.9         1,680.0         2,520.0        62.5        336.0
+mobility aid only        26.7   7.8         1,680.0         2,519.5        181.6       336.0
+sitter only              29.1   8.7         1,680.0         2,518.5        62.5        0.0
+agent, sitters as today  24.0   7.3         1,680.0         2,520.0        81.2        336.0
+
+estimated AI and platform cost for 28 days (assumed rates in config/pricing.yaml): $76
+  Foundry Models: $0.24 (336 briefs)
+  Azure Container Apps: $0.76 (25,200 vCPU-seconds)
+  Azure AI Search: $70.00 (28 days)
+  Storage: $4.67 (28 days)
+  prompt 556 tokens and output 310 tokens per brief (measured), 336 briefs
+cost per $1,000 of net value: $0.40; per measure-day: $0.0177 (4,281 measure-days)
+value after cost: $188,927 per 28 days (30-replication mean)
+```
+<!-- /output -->
+
+<!-- output: healthcare fairness -->
+```text
+screening heuristic on synthetic groups, not a legal or regulatory test: G2/G1 ratio within [0.8, 1.25], falls-rate gap within 1.5 per 1,000 bed-days (config/healthcare/fairness.yaml, committed before results)
+
+history, current rules (gold.fairness_monitor, 180 days):
+decision                 G1      G2      G2/G1  G2 eligible  limit
+-----------------------  ------  ------  -----  -----------  ------
+bed_alarm                0.2616  0.2765  1.057  3143         within
+falls_per_1000_bed_days  3.1914  2.7510  0.862  19266        within
+hourly_rounding          0.3902  0.3948  1.012  3143         within
+mobility_aid             0.0411  0.0465  1.129  3143         within
+protected_before_fall    0.3717  0.3774  1.015  53           within
+sitter_request           0.0657  0.0614  0.934  3143         within
+
+forward simulation, 30 replications (share of patients for measures, share of falls for protected_before_fall):
+decision                 arm            G1      G2      G2/G1 [95%]           change vs current rules [95%]  gap    limit
+-----------------------  -------------  ------  ------  --------------------  -----------------------------  -----  ------
+bed_alarm                current rules  0.2502  0.2604  1.044 [1.012, 1.075]  -                              -      within
+bed_alarm                agent          0.3375  0.3332  0.989 [0.961, 1.016]  -0.055 [-0.090, -0.017]        -      within
+hourly_rounding          current rules  0.3758  0.3832  1.021 [0.998, 1.044]  -                              -      within
+hourly_rounding          agent          0.4780  0.4768  0.998 [0.982, 1.014]  -0.023 [-0.045, +0.000]        -      within
+mobility_aid             current rules  0.0366  0.0408  1.151 [1.040, 1.278]  -                              -      within
+mobility_aid             agent          0.0497  0.0485  0.995 [0.909, 1.082]  -0.156 [-0.271, -0.046]        -      within
+sitter_request           current rules  0.0599  0.0620  1.050 [0.988, 1.118]  -                              -      within
+sitter_request           agent          0.0000  0.0000  not used              -                              -      within
+protected_before_fall    current rules  0.3557  0.3346  1.020 [0.801, 1.256]  -                              -      within
+protected_before_fall    agent          0.5331  0.5240  1.007 [0.890, 1.124]  -0.013 [-0.245, +0.210]        -      within
+falls_per_1000_bed_days  current rules  3.2253  3.1629  1.021 [0.903, 1.151]  -                              -0.06  within
+falls_per_1000_bed_days  agent          2.9048  3.0811  1.087 [0.973, 1.202]  +0.066 [-0.036, +0.170]        +0.18  within
+
+all limits met: history True, forward True
+```
+<!-- /output -->

@@ -6,7 +6,7 @@ Package map:
     storage/    one storage and query interface; local Delta + DuckDB adapter and cloud adapters
     knowledge/  embeddings, vector index, knowledge graph, GraphRAG-style retrieval, evaluation
     serve/      MCP data server and A2A endpoint over the governed gateway
-    domains/    pluggable business domains (retail is built; mortgage, insurance, healthcare are planned)
+    domains/    pluggable business domains (retail, mortgage, insurance and healthcare, all built)
 """
 
 from pathlib import Path

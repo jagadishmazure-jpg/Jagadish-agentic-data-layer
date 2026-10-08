@@ -146,5 +146,5 @@ returned.
 
 ## 16. Interview talking points
 
-* "The same retrieval code serves three domains; only the corpus, aliases and graph change."
+* "The same retrieval code serves all four domains; only the corpus, aliases and graph change."
 * "Region trimming happens before ranking, so a document the caller cannot see never competes."

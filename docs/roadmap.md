@@ -26,16 +26,29 @@ flowchart LR
 |---|---|---|---|---|---|
 | 1 | Mortgage | Quillmere Home Loans | Rate-lock fallout | Which locks get outreach, a document chase or a lock extension | **Built** ([docs/mortgage](mortgage/README.md)) |
 | 2 | Insurance | Ferrowind Insurance | Claims triage and leakage | Queue assignment, leakage review, subrogation referral | **Built** ([docs/insurance](insurance/README.md)) |
-| 3 | Healthcare | Halsey Vale Health | Inpatient fall risk | Bed alarm, hourly rounding, mobility support | Planned |
+| 3 | Healthcare | Halsey Vale Health | Inpatient fall risk (synthetic, PHI-free) | Bed alarm, hourly rounding, mobility aid, sitter request, each approved by a nurse | **Built** ([docs/healthcare](healthcare/README.md)) |
 
 Mortgage was built second because its decision (who to call today) has the same shape as retail
 (what to order today): a risk score per item, a small set of levers, a person approving the expensive
 ones, and a value ledger. Building it moved the approval workflow and the cost export into the shared
 core (`adl.core.agentflow`, `adl.core.finops`) and made the gateway's row-scope table a parameter.
 Insurance was built third on the same core with no change to retail or mortgage; it added the shared
-logistic model (`adl.core.logit`) and a fairness screen across synthetic proxy groups. Healthcare is
-still planned: it has its use case, KPIs and levers in `src/adl/core/domain.py` and three validated
-contracts in `domains/healthcare/contracts/`; the plan is in `domains/healthcare/README.md`.
+logistic model (`adl.core.logit`) and a fairness screen across synthetic proxy groups. Healthcare was
+built fourth, on fully synthetic, PHI-free data: it added optional per-identity column masking to the
+gateway (used by no other domain), an action set limited to four nursing measures with a person
+approving every one, and model-risk notes stating the fall-risk model is not a medical device. All four
+domains are now complete.
+
+## Healthcare items still planned
+
+| Item | Why it is not built |
+|---|---|
+| MCP and A2A serving for healthcare | The gateway is in-process; serving reuses `adl.serve` once remote access is needed |
+| Live executor (nursing task list, electronic health record) | No real system to call; dry run keeps the demo safe |
+| Clinical validation, calibration on real data, regulatory review | Out of scope for a synthetic portfolio; the model is not a medical device |
+| Missed KPI targets (falls, falls with harm, days to first measure) | Reported as missed; capacity is fixed at today's level, so larger cuts need more measures or earlier assessment, not only better ranking |
+| A sitter decision that weighs more than cost | At the planning costs the agent books no sitters; the recommended variant keeps sitters as today and leaves that decision with the nurse in charge |
+| HL7 v2 or FHIR intake | Feeds are clean synthetic tables with planted faults |
 
 ## Insurance items still planned
 
