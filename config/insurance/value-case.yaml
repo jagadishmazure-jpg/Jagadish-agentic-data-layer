@@ -1,0 +1,24 @@
+# Phase 0 for the insurance domain: the value case, written before the simulator, the models or any result.
+# `adl insurance value-case` measures the baselines from gold.claims_daily through the metrics layer;
+# `adl insurance value` reports the simulated result against these targets, including any target that is missed.
+use_case: insurance-claims-triage-leakage
+domain: insurance
+business_problem: >-
+  Ferrowind Insurance routes new claims by a reported-amount rule, so complex claims are fast-tracked and
+  escalated late while simple ones wait in the complex unit. Closing payments are reviewed largest first and
+  subrogation is referred only when an adjuster ticks the third-party box, so overpayments and recoveries leak.
+sponsor: Head of claims (fictional role)
+decision_owners: [claims intake desk, adjusters, claims team leads, leakage review team, subrogation unit]
+measurement_window_days: 28
+kpis:
+  # target_change_pct is relative to the current rules over the same window
+  - {metric: cycle_days, direction: down, target_change_pct: -10, why: "claims are paid sooner after they are reported"}
+  - {metric: leakage_usd, direction: down, target_change_pct: -25, why: "fewer overpayments paid and fewer recoveries missed"}
+  - {metric: reopen_rate_pct, direction: down, target_change_pct: -15, why: "fewer claims reopened after payment"}
+  - {metric: backlog_spread_days, direction: down, target_change_pct: -20, why: "work is spread more evenly across the three queues"}
+value_tree:
+  collect: [first notice of loss, policies, queue assignments, claim events, payments, file audits, subrogation, adjuster notes]
+  insights: [complexity at first notice, leakage likelihood at payment, subrogation potential]
+  actions: [queue assignment, leakage review before payment, subrogation referral]
+  value: [overpayments caught, recoveries made, adjuster time saved, fewer reopened claims]
+  monetise: [net value after review and referral cost, cost per outcome including AI and platform cost, FOCUS cost export to FinOps]

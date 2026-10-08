@@ -1,0 +1,13 @@
+# Unfair-discrimination check for the insurance domain, written before the simulator, the models or any result.
+# The proxy group is a synthetic attribute derived from the claimant's postcode district (silver.postcode_groups).
+# It is never a model feature and never reaches an agent; only the fairness audit reads it, from restricted silver.
+# The selection-rate band is the four-fifths heuristic used in employment testing, applied here as a screening
+# threshold, not a legal test. Results are reported hit or miss, like the KPI targets.
+groups: [G1, G2]
+reference_group: G1
+selection_rate_ratio: {min: 0.80, max: 1.25}   # group G2 rate / group G1 rate for each decision below
+decisions:
+  fast_track: "share of new claims sent to fast track (faster service)"
+  leakage_review: "share of paid claims reviewed before payment (extra scrutiny)"
+  subrogation_referral: "share of paid claims referred for recovery"
+max_cycle_days_gap: 2.0                         # absolute gap in mean days from report to payment
