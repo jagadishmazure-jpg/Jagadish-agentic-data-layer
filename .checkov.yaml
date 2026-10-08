@@ -1,0 +1,30 @@
+# checkov configuration for the three Terraform stacks (infra.yml runs `checkov -d infra/terraform/<stack> --config-file .checkov.yaml`).
+# Every skip below has a reason. Most exist because checkov reads the dev defaults (public endpoints, single replica,
+# locally redundant storage) while envs/prod.tfvars turns on private networking, ZRS and three search replicas.
+framework:
+  - terraform
+compact: true
+quiet: true
+skip-check:
+  # Azure: dev keeps public endpoints so the stack can be reached without a VPN; prod sets private_networking = true
+  - CKV_AZURE_35   # storage default network rule is Deny when private_networking = true (prod)
+  - CKV_AZURE_59   # storage public network access is off when private_networking = true (prod)
+  - CKV2_AZURE_33  # storage private endpoints are created when private_networking = true (prod)
+  - CKV_AZURE_109  # Key Vault firewall default is Deny when private_networking = true (prod)
+  - CKV_AZURE_189  # Key Vault public network access is off when private_networking = true (prod)
+  - CKV2_AZURE_32  # Key Vault private endpoint is created when private_networking = true (prod)
+  - CKV_AZURE_124  # AI Search public network access is off when private_networking = true (prod)
+  # Azure: availability is sized per environment
+  - CKV_AZURE_206  # LRS in dev, ZRS in prod; geo-replication is not needed for rebuildable synthetic data
+  - CKV_AZURE_208  # one search replica in dev, three in prod (the SLA needs three)
+  - CKV_AZURE_209  # one search replica in dev, three in prod (the SLA needs three)
+  # Azure: covered another way
+  - CKV2_AZURE_1   # platform-managed keys plus infrastructure (double) encryption; customer-managed keys are a documented upgrade
+  - CKV2_AZURE_21  # blob read/write/delete are logged through the diagnostic setting (audit category group) to Log Analytics
+  - CKV_AZURE_33   # the account has no queues
+  # GCP
+  - CKV_GCP_62     # the access-log bucket cannot log to itself; the lake bucket logs to it
+  - CKV_GCP_81     # Google-managed encryption; customer-managed keys (Cloud KMS) are a documented upgrade
+  # AWS
+  - CKV_AWS_144    # cross-region replication doubles storage cost for rebuildable synthetic data
+  - CKV2_AWS_62    # no consumer of S3 event notifications; the pipeline is scheduled, not event-driven

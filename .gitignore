@@ -10,9 +10,6 @@ dist/
 *.pdf
 refs/
 out/
-evidence/*.json
-evidence/*.jsonl
-!evidence/README.md
 sbom*.json
 
 # Terraform
@@ -23,4 +20,3 @@ sbom*.json
 tfplan
 crash.log
 backend_override.tf
-out/

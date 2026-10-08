@@ -1,0 +1,67 @@
+# Manual teardown of one environment on one cloud. Gated by DEPLOY_ENABLED == 'true' like deploy.yml,
+# runs in the matching GitHub Environment (so prod teardown also needs reviewer approval), and requires
+# typing the environment name to confirm.
+name: teardown
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to destroy"
+        type: choice
+        options: [dev, prod]
+        default: dev
+      cloud:
+        description: "Cloud"
+        type: choice
+        options: [azure, gcp, aws]
+        default: azure
+      confirm:
+        description: "Type the environment name again to confirm"
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  teardown:
+    if: vars.DEPLOY_ENABLED == 'true' && inputs.confirm == inputs.environment
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TARGET_ENV: ${{ inputs.environment }}
+      CLOUD: ${{ inputs.cloud }}
+      AZURE_TOOL: terraform
+      ARM_USE_OIDC: "true"
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      TFSTATE_AZURE_RESOURCE_GROUP: ${{ vars.TFSTATE_AZURE_RESOURCE_GROUP }}
+      TFSTATE_AZURE_STORAGE_ACCOUNT: ${{ vars.TFSTATE_AZURE_STORAGE_ACCOUNT }}
+      TFSTATE_GCS_BUCKET: ${{ vars.TFSTATE_GCS_BUCKET }}
+      TFSTATE_S3_BUCKET: ${{ vars.TFSTATE_S3_BUCKET }}
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with: { terraform_version: "1.16.4", terraform_wrapper: false }
+      - uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
+        if: inputs.cloud == 'azure'
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        if: inputs.cloud == 'gcp'
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        if: inputs.cloud == 'aws'
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+      - name: Destroy
+        run: .github/scripts/deploy.sh destroy

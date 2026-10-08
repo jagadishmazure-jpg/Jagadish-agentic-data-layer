@@ -1,0 +1,156 @@
+# Deploy the data-layer stack to Azure, Google Cloud and/or AWS: dev -> (approval) -> prod.
+#
+# GATED OFF: every job except `preflight` runs only when the repository variable
+# DEPLOY_ENABLED == 'true'. It is not set, so on push to main this workflow reports the gate and
+# skips. Nothing in this repository has been deployed. See docs/deployment.md for the one-time
+# setup per cloud (OIDC trust, GitHub Environments `dev` and `prod` with required reviewers, state).
+#
+# Every cloud login is OIDC: azure/login with a federated credential, google-github-actions/auth with
+# workload identity federation, aws-actions/configure-aws-credentials with AssumeRoleWithWebIdentity.
+# No client secret, key file or access key exists.
+name: deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      clouds:
+        description: "Clouds to deploy (JSON list)"
+        type: string
+        default: '["azure"]'
+      azure_tool:
+        description: "IaC tool for Azure"
+        type: choice
+        options: [terraform, bicep]
+        default: terraform
+      promote_to_prod:
+        description: "Continue to prod after dev (prod still waits for reviewer approval)"
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  TF_VERSION: "1.16.4"
+  AZURE_TOOL: ${{ inputs.azure_tool || vars.AZURE_TOOL || 'terraform' }}
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      clouds: ${{ steps.gate.outputs.clouds }}
+    steps:
+      - name: Report deploy gate
+        id: gate
+        env:
+          ENABLED: ${{ vars.DEPLOY_ENABLED == 'true' }}
+          CLOUDS: ${{ inputs.clouds || vars.DEPLOY_CLOUDS || '["azure"]' }}
+        run: |
+          echo "clouds=${CLOUDS}" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Deploy gate"
+            echo "- DEPLOY_ENABLED: \`${ENABLED}\` (deploy jobs run only when this is true)"
+            echo "- clouds: \`${CLOUDS}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          [[ "$ENABLED" == "true" ]] || echo "::notice::Deployment disabled (repository variable DEPLOY_ENABLED is not 'true'); deploy jobs are skipped."
+
+  deploy-dev:
+    needs: preflight
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: dev
+    strategy:
+      fail-fast: false
+      matrix:
+        cloud: ${{ fromJSON(needs.preflight.outputs.clouds) }}
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TARGET_ENV: dev
+      CLOUD: ${{ matrix.cloud }}
+      ARM_USE_OIDC: "true"
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      TFSTATE_AZURE_RESOURCE_GROUP: ${{ vars.TFSTATE_AZURE_RESOURCE_GROUP }}
+      TFSTATE_AZURE_STORAGE_ACCOUNT: ${{ vars.TFSTATE_AZURE_STORAGE_ACCOUNT }}
+      TFSTATE_GCS_BUCKET: ${{ vars.TFSTATE_GCS_BUCKET }}
+      TFSTATE_S3_BUCKET: ${{ vars.TFSTATE_S3_BUCKET }}
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with: { terraform_version: "${{ env.TF_VERSION }}", terraform_wrapper: false }
+      - uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
+        if: matrix.cloud == 'azure'
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        if: matrix.cloud == 'gcp'
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        if: matrix.cloud == 'aws'
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+      - name: Provision (${{ matrix.cloud }})
+        run: .github/scripts/deploy.sh provision
+      - name: Smoke checks (${{ matrix.cloud }})
+        run: .github/scripts/deploy.sh smoke
+
+  deploy-prod:
+    needs: [preflight, deploy-dev]
+    if: vars.DEPLOY_ENABLED == 'true' && (github.event_name == 'push' || inputs.promote_to_prod)
+    runs-on: ubuntu-latest
+    environment: prod # required reviewers are configured on this environment
+    strategy:
+      fail-fast: false
+      matrix:
+        cloud: ${{ fromJSON(needs.preflight.outputs.clouds) }}
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TARGET_ENV: prod
+      CLOUD: ${{ matrix.cloud }}
+      ARM_USE_OIDC: "true"
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      TFSTATE_AZURE_RESOURCE_GROUP: ${{ vars.TFSTATE_AZURE_RESOURCE_GROUP }}
+      TFSTATE_AZURE_STORAGE_ACCOUNT: ${{ vars.TFSTATE_AZURE_STORAGE_ACCOUNT }}
+      TFSTATE_GCS_BUCKET: ${{ vars.TFSTATE_GCS_BUCKET }}
+      TFSTATE_S3_BUCKET: ${{ vars.TFSTATE_S3_BUCKET }}
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with: { terraform_version: "${{ env.TF_VERSION }}", terraform_wrapper: false }
+      - uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
+        if: matrix.cloud == 'azure'
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        if: matrix.cloud == 'gcp'
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        if: matrix.cloud == 'aws'
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+      - name: Provision (${{ matrix.cloud }})
+        run: .github/scripts/deploy.sh provision
+      - name: Smoke checks (${{ matrix.cloud }})
+        run: .github/scripts/deploy.sh smoke

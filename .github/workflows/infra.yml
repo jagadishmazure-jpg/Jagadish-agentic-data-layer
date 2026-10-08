@@ -1,0 +1,192 @@
+# Infrastructure CI for the three Terraform stacks (azure, gcp, aws). Nothing here touches a cloud
+# unless that cloud's OIDC variables exist, and even then it only plans.
+#   terraform fmt / init -backend=false / validate / test (mocked providers)
+#   tflint (skipped with a warning if it cannot be installed)
+#   checkov security scan (config: .checkov.yaml; every skip has a reason; unlisted findings fail)
+#   terraform plan: only when the stack's OIDC variables are set
+name: infra
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: infra-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  TF_VERSION: "1.16.4"
+  TF_IN_AUTOMATION: "1"
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: [azure, gcp, aws]
+    env:
+      STACK: infra/terraform/${{ matrix.stack }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with: { terraform_version: "${{ env.TF_VERSION }}", terraform_wrapper: false }
+      - name: terraform fmt
+        run: terraform -chdir="$STACK" fmt -check -recursive -diff
+      - name: terraform init (no backend)
+        run: terraform -chdir="$STACK" init -backend=false -input=false
+      - name: terraform validate
+        run: terraform -chdir="$STACK" validate
+      - name: terraform test (offline plan with a mocked provider)
+        run: terraform -chdir="$STACK" test
+
+  tflint:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: [azure, gcp, aws]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: terraform-linters/setup-tflint@90f302c255ef959cbfb4bd10581afecdb7ece3e6 # v4.1.1
+        id: setup
+        continue-on-error: true
+        with: { tflint_version: v0.64.0, github_token: "${{ github.token }}" }
+      - name: tflint
+        if: steps.setup.outcome == 'success'
+        working-directory: infra/terraform/${{ matrix.stack }}
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        run: tflint --init && tflint --format compact
+      - name: tflint unavailable
+        if: steps.setup.outcome != 'success'
+        run: echo "::warning::tflint could not be installed; lint skipped (validate still enforced)"
+
+  checkov:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: [azure, gcp, aws]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with: { python-version: "3.12" }
+      - run: pip install --quiet checkov==3.3.20
+      - name: checkov (Terraform)
+        run: checkov -d "infra/terraform/${{ matrix.stack }}" --config-file .checkov.yaml
+
+  plan-azure:
+    needs: terraform
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      STACK: infra/terraform/azure
+      ARM_USE_OIDC: "true"
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+    steps:
+      - name: Azure credentials present?
+        id: creds
+        run: |
+          if [[ -n "$ARM_CLIENT_ID" && -n "$ARM_TENANT_ID" && -n "$ARM_SUBSCRIPTION_ID" ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Azure plan skipped: no OIDC variables configured"
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: steps.creds.outputs.present == 'true'
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        if: steps.creds.outputs.present == 'true'
+        with: { terraform_version: "${{ env.TF_VERSION }}", terraform_wrapper: false }
+      - uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
+        if: steps.creds.outputs.present == 'true'
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: terraform plan (dev, local state)
+        if: steps.creds.outputs.present == 'true'
+        run: |
+          printf 'terraform {\n  backend "local" {}\n}\n' > "$STACK/backend_override.tf"
+          terraform -chdir="$STACK" init -input=false
+          terraform -chdir="$STACK" plan -input=false -lock=false -var-file=envs/dev.tfvars -no-color
+
+  plan-gcp:
+    needs: terraform
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      STACK: infra/terraform/gcp
+      GCP_WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
+      GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+    steps:
+      - name: Google Cloud credentials present?
+        id: creds
+        run: |
+          if [[ -n "$GCP_WIF_PROVIDER" && -n "$GCP_SERVICE_ACCOUNT" ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GCP plan skipped: no workload identity federation variables configured"
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: steps.creds.outputs.present == 'true'
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        if: steps.creds.outputs.present == 'true'
+        with: { terraform_version: "${{ env.TF_VERSION }}", terraform_wrapper: false }
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        if: steps.creds.outputs.present == 'true'
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      - name: terraform plan (dev, local state)
+        if: steps.creds.outputs.present == 'true'
+        run: |
+          printf 'terraform {\n  backend "local" {}\n}\n' > "$STACK/backend_override.tf"
+          terraform -chdir="$STACK" init -input=false
+          terraform -chdir="$STACK" plan -input=false -lock=false -var-file=envs/dev.tfvars -no-color
+
+  plan-aws:
+    needs: terraform
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      STACK: infra/terraform/aws
+      AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+    steps:
+      - name: AWS credentials present?
+        id: creds
+        run: |
+          if [[ -n "$AWS_ROLE_ARN" ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::AWS plan skipped: no OIDC role configured"
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: steps.creds.outputs.present == 'true'
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        if: steps.creds.outputs.present == 'true'
+        with: { terraform_version: "${{ env.TF_VERSION }}", terraform_wrapper: false }
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        if: steps.creds.outputs.present == 'true'
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+      - name: terraform plan (dev, local state)
+        if: steps.creds.outputs.present == 'true'
+        run: |
+          printf 'terraform {\n  backend "local" {}\n}\n' > "$STACK/backend_override.tf"
+          terraform -chdir="$STACK" init -input=false
+          terraform -chdir="$STACK" plan -input=false -lock=false -var-file=envs/dev.tfvars -no-color
