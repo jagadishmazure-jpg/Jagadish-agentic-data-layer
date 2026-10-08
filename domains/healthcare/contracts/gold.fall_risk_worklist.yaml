@@ -1,0 +1,50 @@
+# Data contract (PLANNED, nothing built yet): healthcare.gold.fall_risk_worklist for the fictional Halsey Vale Health. Validated by adl.core.contracts in CI.
+id: healthcare.gold.fall_risk_worklist
+version: 0.1.0
+domain: healthcare
+layer: gold
+table: fall_risk_worklist
+kind: insight_product
+status: planned
+description: Current inpatients ranked by fall risk for the nurse in charge; pseudonymous encounter ids only.
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: confidential
+schema:
+- name: encounter_key
+  type: string
+  nullable: false
+- name: ward
+  type: string
+  nullable: false
+- name: risk_score
+  type: float
+  nullable: false
+- name: risk_band
+  type: string
+  nullable: false
+- name: top_factor
+  type: string
+  nullable: false
+primary_key: &id001
+- encounter_key
+quality:
+- check: unique
+  columns: *id001
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - direct_care_support
+  prohibited_purposes:
+  - insurance_eligibility
+  - employee_performance_management
+  - sale_of_data_to_third_parties
+consumers:
+- agent:healthcare-assistant
+inputs:
+- healthcare.silver.inpatient_encounters
+agent_exposed: true

@@ -1,1 +1,1 @@
-"""Retail domain: stockouts and markdown optimisation for Wrenfield Grocers (fictional)."""
+"""Retail domain (BUILT): stockouts and markdown for the fictional Wrenfield Grocers (8 stores, 48 products)."""

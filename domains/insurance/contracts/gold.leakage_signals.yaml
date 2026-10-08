@@ -1,0 +1,48 @@
+# Data contract (PLANNED, nothing built yet): insurance.gold.leakage_signals for the fictional Ferrowind Insurance. Validated by adl.core.contracts in CI.
+id: insurance.gold.leakage_signals
+version: 0.1.0
+domain: insurance
+layer: gold
+table: leakage_signals
+kind: insight_product
+status: planned
+description: Closed claims whose payment pattern suggests leakage (overpayment, missed subrogation, duplicate invoices).
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: internal
+schema:
+- name: claim_id
+  type: string
+  nullable: false
+- name: signal
+  type: string
+  nullable: false
+- name: estimated_leakage_usd
+  type: float
+  nullable: false
+- name: confidence
+  type: float
+  nullable: false
+primary_key: &id001
+- claim_id
+- signal
+quality:
+- check: unique
+  columns: *id001
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - claims_quality_review
+  prohibited_purposes:
+  - claim_denial_without_human_review
+  - underwriting_by_protected_characteristic
+  - sale_of_data_to_third_parties
+consumers:
+- agent:insurance-assistant
+inputs:
+- insurance.silver.claims
+agent_exposed: true

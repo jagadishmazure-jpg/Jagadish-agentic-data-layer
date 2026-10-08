@@ -1,0 +1,60 @@
+# Data contract (PLANNED, nothing built yet): mortgage.gold.pipeline_daily for the fictional Quillmere Home Loans. Validated by adl.core.contracts in CI.
+id: mortgage.gold.pipeline_daily
+version: 0.1.0
+domain: mortgage
+layer: gold
+table: pipeline_daily
+kind: data_product
+status: planned
+description: Applications per stage, product and channel per day with pull-through and cycle time.
+owner:
+  team: lending-data
+  steward: Lending data steward
+  contact: lending-data@quillmere.example
+classification: internal
+schema:
+- name: day
+  type: int
+  nullable: false
+- name: product
+  type: string
+  nullable: false
+- name: channel
+  type: string
+  nullable: false
+- name: stage
+  type: string
+  nullable: false
+- name: applications
+  type: int
+  nullable: false
+- name: pull_through_pct
+  type: float
+  nullable: false
+- name: median_days_in_stage
+  type: float
+  nullable: false
+primary_key: &id001
+- day
+- product
+- channel
+- stage
+quality:
+- check: unique
+  columns: *id001
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - pipeline_management
+  - capacity_planning
+  prohibited_purposes:
+  - credit_decisioning
+  - pricing_by_protected_characteristic
+  - sale_of_data_to_third_parties
+consumers:
+- agent:mortgage-assistant
+inputs:
+- mortgage.silver.applications
+agent_exposed: true

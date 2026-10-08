@@ -1,0 +1,52 @@
+# Data contract (PLANNED, nothing built yet): healthcare.gold.ward_fall_rates for the fictional Halsey Vale Health. Validated by adl.core.contracts in CI.
+id: healthcare.gold.ward_fall_rates
+version: 0.1.0
+domain: healthcare
+layer: gold
+table: ward_fall_rates
+kind: data_product
+status: planned
+description: Falls per 1,000 bed-days per ward and week, suppressed below the minimum count.
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: confidential
+schema:
+- name: ward
+  type: string
+  nullable: false
+- name: week
+  type: int
+  nullable: false
+- name: bed_days
+  type: int
+  nullable: false
+- name: falls
+  type: int
+  nullable: false
+- name: falls_per_1000_bed_days
+  type: float
+  nullable: false
+primary_key: &id001
+- ward
+- week
+quality:
+- check: unique
+  columns: *id001
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - quality_improvement
+  - staffing_planning
+  prohibited_purposes:
+  - insurance_eligibility
+  - employee_performance_management
+  - sale_of_data_to_third_parties
+consumers:
+- agent:healthcare-assistant
+inputs:
+- healthcare.silver.inpatient_encounters
+agent_exposed: true

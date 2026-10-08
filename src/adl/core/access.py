@@ -121,7 +121,7 @@ class DataGateway:
         if regions:
             if "region" in c.columns:
                 out.append(("region", list(regions)))
-            elif "store_id" in c.columns:
+            if "store_id" in c.columns:
                 out.append(("store_id", [s for r in regions for s in self.region_stores.get(r, ())]))
         return out
 

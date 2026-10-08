@@ -1,0 +1,50 @@
+# Data contract (PLANNED, nothing built yet): healthcare.silver.inpatient_encounters for the fictional Halsey Vale Health. Validated by adl.core.contracts in CI.
+id: healthcare.silver.inpatient_encounters
+version: 0.1.0
+domain: healthcare
+layer: silver
+table: inpatient_encounters
+kind: conformed
+status: planned
+description: Inpatient stays with ward, mobility assessment, medication classes and fall events (synthetic only).
+owner:
+  team: clinical-data
+  steward: Clinical data steward
+  contact: clinical-data@halseyvale.example
+classification: restricted
+schema:
+- name: encounter_id
+  type: string
+  nullable: false
+- name: patient_name
+  type: string
+  nullable: false
+  pii: true
+- name: ward
+  type: string
+  nullable: false
+- name: admit_day
+  type: int
+  nullable: false
+- name: age_band
+  type: string
+  nullable: false
+- name: mobility_score
+  type: int
+  nullable: false
+- name: sedative_count
+  type: int
+  nullable: false
+- name: fall_event
+  type: bool
+  nullable: false
+primary_key: &id001
+- encounter_id
+quality:
+- check: unique
+  columns: *id001
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+inputs:
+- healthcare.bronze.inpatient_encounters

@@ -1,0 +1,53 @@
+# Data contract (PLANNED, nothing built yet): mortgage.gold.fallout_risk for the fictional Quillmere Home Loans. Validated by adl.core.contracts in CI.
+id: mortgage.gold.fallout_risk
+version: 0.1.0
+domain: mortgage
+layer: gold
+table: fallout_risk
+kind: insight_product
+status: planned
+description: Probability each locked application falls out before closing, with the main drivers.
+owner:
+  team: lending-data
+  steward: Lending data steward
+  contact: lending-data@quillmere.example
+classification: internal
+schema:
+- name: application_id
+  type: string
+  nullable: false
+- name: product
+  type: string
+  nullable: false
+- name: channel
+  type: string
+  nullable: false
+- name: days_to_lock_expiry
+  type: int
+  nullable: false
+- name: probability
+  type: float
+  nullable: false
+- name: top_driver
+  type: string
+  nullable: false
+primary_key: &id001
+- application_id
+quality:
+- check: unique
+  columns: *id001
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - pipeline_management
+  prohibited_purposes:
+  - credit_decisioning
+  - pricing_by_protected_characteristic
+  - sale_of_data_to_third_parties
+consumers:
+- agent:mortgage-assistant
+inputs:
+- mortgage.silver.applications
+agent_exposed: true

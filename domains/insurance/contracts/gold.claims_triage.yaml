@@ -1,0 +1,50 @@
+# Data contract (PLANNED, nothing built yet): insurance.gold.claims_triage for the fictional Ferrowind Insurance. Validated by adl.core.contracts in CI.
+id: insurance.gold.claims_triage
+version: 0.1.0
+domain: insurance
+layer: gold
+table: claims_triage
+kind: insight_product
+status: planned
+description: Complexity score and suggested handling queue for each open claim.
+owner:
+  team: claims-data
+  steward: Claims data steward
+  contact: claims-data@ferrowind.example
+classification: internal
+schema:
+- name: claim_id
+  type: string
+  nullable: false
+- name: line
+  type: string
+  nullable: false
+- name: complexity_score
+  type: float
+  nullable: false
+- name: suggested_queue
+  type: string
+  nullable: false
+- name: reserve_usd
+  type: float
+  nullable: false
+primary_key: &id001
+- claim_id
+quality:
+- check: unique
+  columns: *id001
+slo:
+  completeness_pct: 99.5
+  freshness_days: 1
+acceptable_use:
+  allowed_purposes:
+  - claims_handling
+  prohibited_purposes:
+  - claim_denial_without_human_review
+  - underwriting_by_protected_characteristic
+  - sale_of_data_to_third_parties
+consumers:
+- agent:insurance-assistant
+inputs:
+- insurance.silver.claims
+agent_exposed: true
