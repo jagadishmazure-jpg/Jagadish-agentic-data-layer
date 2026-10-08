@@ -36,14 +36,34 @@ def wf(name):
 # ---------------------------------------------------------------- every stack
 @pytest.mark.parametrize("stack", STACKS)
 def test_stack_has_the_standard_files(stack):
-    for f in ("versions.tf", "providers.tf", "backend.tf", "variables.tf", "main.tf", "outputs.tf", ".tflint.hcl", "tests/plan.tftest.hcl", "envs/dev.tfvars", "envs/prod.tfvars"):
+    for f in (
+        "versions.tf",
+        "providers.tf",
+        "backend.tf",
+        "variables.tf",
+        "main.tf",
+        "outputs.tf",
+        ".tflint.hcl",
+        "tests/plan.tftest.hcl",
+        "envs/dev.tfvars",
+        "envs/prod.tfvars",
+    ):
         assert (TF / stack / f).exists(), f
 
 
 @pytest.mark.parametrize("stack", STACKS)
 def test_no_secrets_in_any_stack(stack):
     text = tf(stack).lower()
-    for word in ("client_secret", "access_key =", "secret_key", "private_key", "aws_iam_access_key", "google_service_account_key", "sas_token", "account_key"):
+    for word in (
+        "client_secret",
+        "access_key =",
+        "secret_key",
+        "private_key",
+        "aws_iam_access_key",
+        "google_service_account_key",
+        "sas_token",
+        "account_key",
+    ):
         assert word not in text, word
 
 
