@@ -48,8 +48,9 @@ def build(b: P.Build, f: Frame, model: Forecaster, elasticity: dict[str, float],
     po = b.store.sql(
         "SELECT store_id, sku, order_day, expected_day, received_day, qty_ordered FROM silver.purchase_orders WHERE received_day IS NULL"
     )
-    avail = f.on_hand[o] + SO.inbound(po, f.keys, o)
-    p, mu = SO.probability(fc[:, : SO.HORIZON], cv, avail)
+    due = SO.due_by_day(po, f.keys, o)
+    avail = f.on_hand[o] + due.sum(1)
+    p, mu = SO.window_probability(fc[:, : SO.HORIZON], cv, f.on_hand[o], due)
     bands = SO.band(p)
     P.write_gold(
         b,

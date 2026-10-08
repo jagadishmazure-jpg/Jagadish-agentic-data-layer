@@ -1,9 +1,12 @@
 """Stockout risk: the probability that a store-product sells out within the next three days.
 
-Available stock is the closing stock plus open purchase orders due inside the window (by their
-expected day; a late order is assumed to arrive tomorrow). Demand over the window is treated as normal
-with the forecast as its mean and a per-category relative error from training. The comparison is the
-rule a store team uses today: flag anything with fewer than three days of cover at the 7-day average.
+For each day d of the window, the shelf sells out if demand over days 1..d exceeds the closing stock
+plus the open purchase orders that will have arrived by then. A delivery due on a day is counted from
+the following day: deliveries from the two least reliable suppliers are on time only about two times in
+three, and a delivery arriving mid-afternoon does not save the morning. Demand is treated as normal
+with the forecast as its mean and a per-category relative error from training; the risk is the largest
+of the three daily probabilities. The comparison is the rule a store team uses today: flag anything
+with fewer than three days of cover at the 7-day average.
 
 The backtest scores both on 32 consecutive origins (days 105 to 136) against what happened.
 """
@@ -31,6 +34,29 @@ def probability(fc: np.ndarray, cv: np.ndarray, available: np.ndarray) -> tuple[
     mu = fc.sum(1)
     sd = np.sqrt(((cv[:, None] * fc) ** 2).sum(1) + mu) + 1e-6
     return 1 - normal_cdf((available + 0.5 - mu) / sd), mu
+
+
+def window_probability(fc: np.ndarray, cv: np.ndarray, on_hand: np.ndarray, due: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Largest daily sell-out probability over the window. due is (S, H): units due on each day."""
+    ps = []
+    for d in range(1, fc.shape[1] + 1):
+        arrived = due[:, : d - 1].sum(1)
+        p, _ = probability(fc[:, :d], cv, on_hand + arrived)
+        ps.append(p)
+    return np.max(ps, 0), fc.sum(1)
+
+
+def due_by_day(po_rows: list[dict], keys: list[tuple[str, str]], origin: int, horizon: int = HORIZON) -> np.ndarray:
+    """Units on open orders due on each day of the window (an overdue order counts as due tomorrow)."""
+    idx = {k: i for i, k in enumerate(keys)}
+    out = np.zeros((len(keys), horizon))
+    for r in po_rows:
+        if r["order_day"] > origin or (r["received_day"] is not None and r["received_day"] <= origin):
+            continue
+        due = max(r["expected_day"], origin + 1)
+        if due <= origin + horizon:
+            out[idx[(r["store_id"], r["sku"])], due - origin - 1] += r["qty_ordered"]
+    return out
 
 
 def inbound(po_rows: list[dict], keys: list[tuple[str, str]], origin: int, horizon: int = HORIZON) -> np.ndarray:
@@ -81,8 +107,7 @@ def backtest(f: Frame, po_rows: list[dict], origins=range(105, 137)) -> RiskBack
     for o in origins:
         model = Forecaster.fit(f, o)
         fc = model.predict(f, o, HORIZON, lev[o])
-        avail = f.on_hand[o] + inbound(po_rows, f.keys, o)
-        p, _ = probability(fc, model.cv[f.cat], avail)
+        p, _ = window_probability(fc, model.cv[f.cat], f.on_hand[o], due_by_day(po_rows, f.keys, o))
         avg7 = np.nanmean(f.units[o - 6 : o + 1], 0)
         y = f.soldout[o + 1 : o + 1 + HORIZON].any(0)
         ys.append(y)
