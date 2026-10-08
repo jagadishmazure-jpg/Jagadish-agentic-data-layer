@@ -135,8 +135,12 @@ class RemoteStore:
     def _query_request(self, sql: str, params: list[Any]) -> tuple[dict[str, Any], str, list[Any]]:
         return {"op": "query", "sql": sql, "parameters": params}, sql, params
 
+    @property
+    def query_scope(self) -> str:
+        return self.scope
+
     def sql(self, query: str, params: list[Any] | None = None) -> list[dict[str, Any]]:
-        self.tokens.token(self.scope)
+        self.tokens.token(self.query_scope)
         req, sql, p = self._query_request(query, list(params or []))
         return self.client.query(req, sql, p)
 

@@ -37,8 +37,11 @@ class OneLakeStore(RemoteStore):
         req["storage_options"] = {"bearer_token": "<from managed identity>", "use_fabric_endpoint": "true"}
         return req
 
+    @property
+    def query_scope(self) -> str:
+        return self.sql_scope
+
     def _query_request(self, sql, params):
-        self.tokens.token(self.sql_scope)
         return (
             {"op": "query", "endpoint": "sql-analytics", "dialect": "tsql", "sql": sql, "parameters": params, "token_scope": self.sql_scope},
             sql,
