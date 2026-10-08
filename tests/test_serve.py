@@ -6,6 +6,7 @@ import pytest
 from mcp import Client
 from starlette.testclient import TestClient
 
+from adl.core.access import AccessDenied
 from adl.serve import a2a
 from adl.serve.mcp_server import TOOL_NAMES, build_server, demo
 
@@ -48,7 +49,7 @@ def test_mcp_denials_are_errors(gw, args):
 
 
 def test_mcp_server_refuses_an_unknown_identity(gw):
-    with pytest.raises(Exception):
+    with pytest.raises(AccessDenied):
         build_server(gw, "agent:nobody")
 
 

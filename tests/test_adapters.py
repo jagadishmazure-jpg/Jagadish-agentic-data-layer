@@ -14,7 +14,7 @@ T = pa.table({"store_id": ["S01", "S02", "S05"], "units": [3, 5, 7], "region": [
 NAMES = list(fake_adapters())
 
 
-@pytest.fixture(params=NAMES + ["local"])
+@pytest.fixture(params=[*NAMES, "local"])
 def store(request, tmp_path):
     return LocalDeltaStore(tmp_path) if request.param == "local" else fake_adapters()[request.param]
 

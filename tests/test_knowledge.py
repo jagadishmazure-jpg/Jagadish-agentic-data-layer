@@ -61,7 +61,7 @@ def test_azure_search_uses_a_bearer_token_never_a_key():
     rec = Recorder()
     ks = AzureSearchKnowledge("https://srch-adl.search.windows.net", "retail-knowledge", rec, token=lambda scope: f"tok:{scope}")
     ks.search("late delivery", [0.0] * 4, 3, ("north",))
-    method, url, body, headers = rec.calls[0]
+    _method, _url, body, headers = rec.calls[0]
     assert headers["Authorization"].startswith("Bearer tok:https://search.azure.com") and "api-key" not in {h.lower() for h in headers}
     assert body["filter"] == "regions/any(r: r eq 'north' or r eq 'all')" and body["vectorQueries"][0]["k"] == 3
 
