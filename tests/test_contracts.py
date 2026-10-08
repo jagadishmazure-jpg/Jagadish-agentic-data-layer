@@ -40,7 +40,19 @@ def test_mortgage_has_ten_silver_and_five_gold():
             assert "credit_decisioning" in c.acceptable_use.prohibited_purposes
 
 
-@pytest.mark.parametrize("name", ["insurance", "healthcare"])
+def test_insurance_has_eleven_silver_and_seven_gold():
+    cs = load_all(ROOT / "domains/insurance/contracts")
+    assert sum(c.layer == "silver" for c in cs.values()) == 11
+    assert sum(c.layer == "gold" for c in cs.values()) == 7
+    assert all(c.status == "built" for c in cs.values())
+    assert cs["insurance.silver.claims"].classification == "restricted"
+    assert cs["insurance.silver.postcode_groups"].classification == "restricted"
+    for c in cs.values():
+        if c.layer == "gold" and c.table != "value_ledger":
+            assert {"claim_denial_without_human_review", "underwriting_by_protected_characteristic"} <= set(c.acceptable_use.prohibited_purposes)
+
+
+@pytest.mark.parametrize("name", ["healthcare"])
 def test_planned_domains_have_only_planned_contracts(name):
     d = get(name)
     assert d.status == "planned"
@@ -49,7 +61,7 @@ def test_planned_domains_have_only_planned_contracts(name):
 
 
 def test_registry_built_domains():
-    assert [d.name for d in REGISTRY.values() if d.status == "built"] == ["retail", "mortgage"]
+    assert [d.name for d in REGISTRY.values() if d.status == "built"] == ["retail", "mortgage", "insurance"]
     with pytest.raises(KeyError):
         get("banking")
 

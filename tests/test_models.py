@@ -96,7 +96,7 @@ def test_markdown_candidates_respect_policy(lake):
 
 def test_product_code_never_reads_ground_truth():
     # the simulators and evaluation harnesses may read the ground truth; product code never does
-    allowed = {"domains/retail/synth.py", "cli.py", "domains/mortgage/world.py"}
+    allowed = {"domains/retail/synth.py", "cli.py", "domains/mortgage/world.py", "domains/insurance/world.py"}
     for p in (ROOT / "src/adl").rglob("*.py"):
         if str(p.relative_to(ROOT / "src/adl")) in allowed:
             continue

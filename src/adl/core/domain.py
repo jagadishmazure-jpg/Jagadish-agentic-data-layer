@@ -54,10 +54,10 @@ REGISTRY = {
     ),
     "insurance": Domain(
         "insurance",
-        "planned",
+        "built",
         "Ferrowind Insurance",
         "claims triage and leakage",
-        "which queue each new claim goes to, and which closed claims to review for leakage",
+        "which queue each new claim goes to, which payments to review for leakage and which to refer for recovery",
         ("cycle time", "leakage dollars", "reopen rate", "adjuster workload"),
         ("queue assignment", "leakage review", "subrogation referral"),
     ),
