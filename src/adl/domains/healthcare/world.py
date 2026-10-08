@@ -37,26 +37,21 @@ import numpy as np
 DAYS_HISTORY = 180  # observed history: day 0 .. 179
 HORIZON = 28
 DAYS_TOTAL = DAYS_HISTORY + HORIZON
-REGIONS = {"north": ("W01", "W02", "W03"), "south": ("W04", "W05", "W06")}
-WARD_NAMES = {
-    "W01": "Ashby general medicine",
-    "W02": "Brook surgical",
-    "W03": "Cedar orthopaedics",
-    "W04": "Dunmore elderly care",
-    "W05": "Elm neurology and stroke",
-    "W06": "Fell cardiology",
-}
+REGIONS = {"north": ("W01", "W02", "W03", "W04", "W05", "W06"), "south": ("W07", "W08", "W09", "W10", "W11", "W12")}
+SITES = {"north": "Halsey", "south": "Vale"}
+WARD_TYPES = ("general medicine", "surgical", "orthopaedics", "elderly care", "neurology and stroke", "cardiology")
 WARD_REGION = {w: r for r, ws in REGIONS.items() for w in ws}
-WARDS = tuple(sorted(WARD_NAMES))
-WARD_P = (0.20, 0.18, 0.15, 0.17, 0.15, 0.15)
+WARDS = tuple(sorted(WARD_REGION))
+WARD_NAMES = {w: f"{SITES[WARD_REGION[w]]} {WARD_TYPES[k % 6]}" for k, w in enumerate(WARDS)}
+WARD_P = (0.10, 0.09, 0.075, 0.085, 0.075, 0.075) * 2  # share of admissions per ward, the same mix at both sites
 GROUPS = ("G1", "G2")
 AGE_BANDS = ("18-49", "50-64", "65-74", "75-84", "85+")
 SOURCES = ("emergency", "elective", "transfer")
 MEASURES = ("bed_alarm", "hourly_rounding", "mobility_aid", "sitter")
 MECHANISMS = ("bed_exit", "toileting", "gait")
-ADMISSIONS_PER_DAY = 24
+ADMISSIONS_PER_DAY = 50
 # Capacity across the hospital each day: bed alarm units, patients on hourly rounding, sitters, new mobility aids.
-CAPACITY = {"bed_alarm": 30, "hourly_rounding": 45, "sitter": 6, "mobility_aid": 8}
+CAPACITY = {"bed_alarm": 60, "hourly_rounding": 90, "sitter": 12, "mobility_aid": 16}
 # Share of the risk from each mechanism that a measure removes (bed exit, toileting, gait). Combined multiplicatively.
 EFFECT = {
     "bed_alarm": (0.45, 0.15, 0.10),
@@ -119,16 +114,16 @@ def _draw(rng: np.random.Generator, first_day: int, last_day: int) -> tuple[Pati
     n = len(days)
     day = np.array(days, int)
     ward = rng.choice(len(WARDS), n, p=WARD_P)
-    old = np.isin(ward, [3]) * 1.0
-    age = np.clip(np.round(rng.normal(2.0 + 1.0 * old - 0.6 * (ward == 1), 1.1, n)), 0, 4).astype(int)
+    kind = ward % len(WARD_TYPES)  # 0 general medicine, 1 surgical, 2 orthopaedics, 3 elderly care, 4 neurology, 5 cardiology
+    age = np.clip(np.round(rng.normal(2.0 + 1.0 * (kind == 3) - 0.6 * (kind == 1), 1.1, n)), 0, 4).astype(int)
     source = rng.choice(3, n, p=(0.65, 0.25, 0.10))
-    cognitive = rng.random(n) < 0.03 + 0.06 * age + 0.10 * np.isin(ward, [3, 4])
-    gait = rng.random(n) < 0.08 + 0.07 * age + 0.25 * (ward == 2) + 0.20 * (ward == 4)
-    toileting = rng.random(n) < 0.10 + 0.05 * age + 0.10 * (ward == 1)
+    cognitive = rng.random(n) < 0.03 + 0.06 * age + 0.10 * np.isin(kind, [3, 4])
+    gait = rng.random(n) < 0.08 + 0.07 * age + 0.25 * (kind == 2) + 0.20 * (kind == 4)
+    toileting = rng.random(n) < 0.10 + 0.05 * age + 0.10 * (kind == 1)
     prior_fall = rng.random(n) < 0.05 + 0.35 * gait + 0.20 * cognitive
-    los = 1 + rng.geometric(1 / (3.5 + 0.6 * age + 1.5 * np.isin(ward, [2, 4])), n)
+    los = 1 + rng.geometric(1 / (3.5 + 0.6 * age + 1.5 * np.isin(kind, [2, 4])), n)
     los = np.minimum(los, 30)
-    delirium = rng.random(n) < 0.04 + 0.04 * age + 0.15 * cognitive + 0.05 * (ward == 1)
+    delirium = rng.random(n) < 0.04 + 0.04 * age + 0.15 * cognitive + 0.05 * (kind == 1)
     onset = day + 1 + (rng.random(n) * np.maximum(los - 1, 1)).astype(int)
     patients = Patients(
         admit_day=day,
@@ -144,7 +139,7 @@ def _draw(rng: np.random.Generator, first_day: int, last_day: int) -> tuple[Pati
         cognitive=cognitive,
         gait=gait,
         toileting=toileting,
-        frailty=rng.normal(-0.3 * (source == 1), 0.5, n),
+        frailty=rng.normal(-0.3 * (source == 1), 0.3, n),
         delirium_on=np.where(delirium, onset, 10**6),
         delirium_off=np.where(delirium, onset + rng.integers(2, 7, n), 10**6),
         fragile=rng.random(n) < 0.15 + 0.06 * age,
@@ -378,16 +373,15 @@ def hazards(w: World, st: State, ids: np.ndarray, t: int) -> np.ndarray:
     """Daily fall probability by mechanism (k, 3) before any measure."""
     p, h = w.patients, st.ground_truth
     delirium = (h.delirium_on[ids] <= t) & (t < h.delirium_off[ids])
-    confused = h.cognitive[ids] | delirium
     sed = st.sedated[ids]
     age = p.age[ids]
     early = (t - p.admit_day[ids]) <= 1
     f = h.frailty[ids]
     return np.column_stack(
         [
-            _sig(-8.5 + 2.6 * confused + 0.8 * sed + 0.25 * age + f),
-            _sig(-8.3 + 2.0 * h.toileting[ids] + 0.6 * sed + 0.2 * age + 0.4 * delirium + f),
-            _sig(-8.4 + 2.2 * h.gait[ids] + 0.6 * sed + 0.25 * age + 0.6 * early + f),
+            _sig(-9.4 + 2.4 * h.cognitive[ids] + 3.4 * delirium + 1.0 * sed + 0.25 * age + f),
+            _sig(-9.1 + 2.8 * h.toileting[ids] + 0.8 * sed + 0.2 * age + 0.6 * delirium + f),
+            _sig(-9.1 + 2.6 * h.gait[ids] + 0.8 * sed + 0.25 * age + 0.6 * early + f),
         ]
     )
 
@@ -399,7 +393,7 @@ def step(w: World, st: State, t: int, policy: Policy, seed: int) -> None:
     n = w.n
     rng = _rng(seed, t)
     u_fall, u_harm, u_sed, u_conf, u_rest, u_unst, u_ms, u_iv, u_gait, u_amb = (rng.random(n) for _ in range(10))
-    calls_base, calls_extra = rng.poisson(0.8, n), rng.poisson(2.5, n)
+    calls_base, calls_extra = rng.poisson(0.6, n), rng.poisson(3.0, n)
     rec, tot = st.record, st.totals
     grp = p.group
     # morning: today's measures for the patients in hospital
@@ -485,9 +479,9 @@ def step(w: World, st: State, t: int, policy: Policy, seed: int) -> None:
     conf = np.where(confused, np.where(documented, 1, -1), np.where(u_conf[ids] < 0.03, 1, np.where(u_conf[ids] < 0.88, 0, -1)))
     sed = st.sedated[ids]
     st.obs[ids, 0] = conf
-    st.obs[ids, 1] = u_rest[ids] < 0.06 + 0.45 * confused + 0.15 * sed
+    st.obs[ids, 1] = u_rest[ids] < 0.05 + 0.25 * h.cognitive[ids] + 0.55 * delirium + 0.15 * sed
     st.obs[ids, 2] = np.minimum(calls_base[ids] + h.toileting[ids] * calls_extra[ids] + delirium, 12)
-    st.obs[ids, 3] = u_unst[ids] < 0.08 + 0.55 * h.gait[ids] + 0.15 * sed
+    st.obs[ids, 3] = u_unst[ids] < 0.05 + 0.65 * h.gait[ids] + 0.2 * sed
     st.obs[ids, 4] = sed
     st.obs_day[ids] = t
     due = ids[(t - p.admit_day[ids]) % ASSESS_EVERY == 0]
