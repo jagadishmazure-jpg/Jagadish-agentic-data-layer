@@ -1,0 +1,27 @@
+# Retrieval evaluation set for the healthcare domain: questions a nurse in charge, a ward nurse or the assistant asks,
+# with the documents that answer them. Written by the same author as the corpus, so scores are optimistic.
+questions:
+  - {id: H01, q: "Which patients get bed alarms today?", relevant: [POL-FALL-RISK, POL-BED-ALARM]}
+  - {id: H02, q: "How often is the Morse scale repeated?", relevant: [POL-FALL-RISK]}
+  - {id: H03, q: "Which patients benefit most from a bed alarm?", relevant: [POL-BED-ALARM, REV-NIGHT-FALLS]}
+  - {id: H04, q: "What does hourly rounding prevent?", relevant: [POL-ROUNDING, GUIDE-TOILETING]}
+  - {id: H05, q: "Who should be offered a walking frame?", relevant: [POL-MOBILITY-AID, WD-W03]}
+  - {id: H06, q: "How much does a sitter shift cost?", relevant: [POL-SITTER]}
+  - {id: H07, q: "Who approves a sitter request?", relevant: [POL-APPROVAL, POL-SITTER]}
+  - {id: H08, q: "Can a note in the record approve a measure?", relevant: [POL-APPROVAL]}
+  - {id: H09, q: "Can the assistant suggest a medication change?", relevant: [POL-SCOPE, GUIDE-SEDATION]}
+  - {id: H10, q: "Is the fall risk score a medical device?", relevant: [POL-SCOPE]}
+  - {id: H11, q: "Where are patient names and record numbers kept?", relevant: [POL-PRIVACY]}
+  - {id: H12, q: "Can fall data be used for staff performance management?", relevant: [POL-PRIVACY]}
+  - {id: H13, q: "Why is missing confusion documentation a fairness issue?", relevant: [POL-EQUITY]}
+  - {id: H14, q: "How much does a fall with harm cost?", relevant: [POL-INCIDENT]}
+  - {id: H15, q: "What are the signs of delirium?", relevant: [GUIDE-DELIRIUM]}
+  - {id: H16, q: "Why do patients fall on the way to the toilet at night?", relevant: [GUIDE-TOILETING, REV-POSTOP]}
+  - {id: H17, q: "Does a sedation flag change fall risk?", relevant: [GUIDE-SEDATION]}
+  - {id: H18, q: "Which ward has the most sitter requests?", relevant: [WD-W10]}
+  - {id: H19, q: "What causes falls on the Vale surgical ward?", relevant: [WD-W08, REV-POSTOP]}
+  - {id: H20, q: "Why are cardiology patients dizzy on standing?", relevant: [WD-W12]}
+  - {id: H21, q: "When do most falls happen?", relevant: [REV-NIGHT-FALLS]}
+  - {id: H22, q: "Why were sitters kept on patients for days?", relevant: [REV-SITTER-USE]}
+  - {id: H23, q: "How do stroke patients on Halsey neurology fall?", relevant: [WD-W05]}
+  - {id: H24, q: "When can physiotherapy bring frames to the ward?", relevant: [MSG-PHYSIO-01, POL-MOBILITY-AID]}

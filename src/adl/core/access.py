@@ -13,6 +13,10 @@ a row limit. Before any SQL runs, the gateway checks, in order:
    reach outside the identity's row scope;
 7. the row limit is within the identity's cap.
 
+Columns can also be masked for an identity (`mask_columns`): the column is returned, but each value is
+replaced by a stable token keyed to the identity, so rows can be told apart without revealing the value,
+and the column cannot be filtered on. No identity in the first three domains masks a column.
+
 The identity's row scope (for example region = north) is then added to the query (row-level
 security), values are bound as parameters, free-text fields are screened and returned quoted as
 untrusted data, and the call is written to the hash-chained audit log whether it succeeded or not.
@@ -20,6 +24,7 @@ untrusted data, and the call is written to the hash-chained audit log whether it
 
 from __future__ import annotations
 
+import hashlib
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -52,6 +57,12 @@ class Identity:
     rows: dict[str, tuple[str, ...]] = field(default_factory=dict)
     deny_columns: dict[str, tuple[str, ...]] = field(default_factory=dict)
     max_rows: int = 100
+    mask_columns: dict[str, tuple[str, ...]] = field(default_factory=dict)
+
+
+def mask_token(identity: str, value: Any) -> str:
+    """Stable per-identity token for a masked value (the same value always gives the same token for that identity)."""
+    return "MASK-" + hashlib.sha256(f"{identity}:{value}".encode()).hexdigest()[:10].upper()
 
 
 def load_identities(path: Path) -> tuple[dict[str, Identity], dict]:
@@ -66,6 +77,7 @@ def load_identities(path: Path) -> tuple[dict[str, Identity], dict]:
             {kk: tuple(vv) for kk, vv in (v.get("rows") or {}).items()},
             {kk: tuple(vv) for kk, vv in (v.get("deny_columns") or {}).items()},
             int(v.get("max_rows", 100)),
+            {kk: tuple(vv) for kk, vv in (v.get("mask_columns") or {}).items()},
         )
     return ids, spec.get("knowledge", {})
 
@@ -159,10 +171,15 @@ class DataGateway:
         ident = self._identity(identity)
         c = self._product(ident, product)
         denied = set(ident.deny_columns.get(product, ()))
+        masked = set(ident.mask_columns.get(product, ()))
         return {
             "name": product,
             "description": c.description,
-            "columns": [{"name": x.name, "type": x.type, "description": x.description} for x in c.schema_ if x.name not in denied],
+            "columns": [
+                {"name": x.name, "type": x.type, "description": x.description, **({"masked": True} if x.name in masked else {})}
+                for x in c.schema_
+                if x.name not in denied
+            ],
             "primary_key": c.primary_key,
             "allowed_purposes": c.acceptable_use.allowed_purposes,
             "prohibited_purposes": c.acceptable_use.prohibited_purposes,
@@ -197,6 +214,8 @@ class DataGateway:
                 col, op, value = f
                 if col not in c.columns:
                     raise AccessDenied("unknown_column", str(col)[:40])
+                if col in ident.mask_columns.get(product, ()):
+                    raise AccessDenied("column_masked", f"{ident.id} sees {product}.{col} masked and cannot filter on it")
                 if op not in OPS:
                     raise AccessDenied("bad_operator", str(op)[:10])
                 values = list(value) if op == "in" else [value]
@@ -215,7 +234,11 @@ class DataGateway:
                 sql += " WHERE " + " AND ".join(where)
             sql += " ORDER BY " + ", ".join(f'"{k}"' for k in c.primary_key) + f" LIMIT {cap if limit > cap else limit}"
             rows = self.store.sql(sql, params)
+            masked = [x for x in ident.mask_columns.get(product, ()) if x in cols]
             for r in rows:
+                for mc in masked:
+                    if r[mc] is not None:
+                        r[mc] = mask_token(ident.id, r[mc])
                 for tf in c.text_fields:
                     if tf in r and r[tf] is not None:
                         r["injection_flag"] = bool(r.get("injection_flag")) or guardrails.screen(r[tf]).flagged
@@ -223,7 +246,10 @@ class DataGateway:
         except AccessDenied as e:
             self.audit.append(identity, "data.denied", {**request, "code": e.code, "detail": e.detail})
             raise
-        self.audit.append(identity, "data.read", {**request, "rows": len(rows), "row_scope": {k: list(v) for k, v in scope}})
+        audit = {**request, "rows": len(rows), "row_scope": {k: list(v) for k, v in scope}}
+        if masked:
+            audit["masked"] = masked
+        self.audit.append(identity, "data.read", audit)
         return rows
 
     def metric(

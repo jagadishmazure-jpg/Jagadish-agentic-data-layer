@@ -1,0 +1,49 @@
+# Agent identities for the healthcare domain and what each may read through the data gateway (adl.core.access).
+# Synthetic, PHI-free data. HIPAA-minded minimum necessary: each identity gets only the products, columns, rows and
+# purposes its job needs. In Azure each identity is a Microsoft Entra ID agent identity / managed identity; here they are names.
+# products: data products (gold, agent_exposed contracts) plus "knowledge" for the knowledge layer.
+# purposes: must also be allowed by the product's contract; insurance eligibility, employee performance management,
+#   medication or diagnosis decisions, marketing and sale of data are prohibited in every contract.
+# rows: row-level scope. region limits rows to that site's wards; omitted means every ward.
+# deny_columns: column-level security per product. mask_columns: returned as a per-identity token, not the value.
+# No identity can read silver.patients (synthetic identity) or silver.demographics (the synthetic group); only the
+# fairness audit reads those, in code, and agents see its aggregate output (fairness_monitor).
+identities:
+  agent:fall-prevention-assistant:
+    description: Plans the morning's preventive measures for every ward, for the nurse in charge to approve.
+    products: [fall_risk_worklist, nursing_notes, ward_daily, knowledge]
+    purposes: [fall_prevention]
+    max_rows: 500
+  agent:ward-copilot-north:
+    description: Answers nurses on the Halsey site about their wards' worklist and notes.
+    products: [fall_risk_worklist, nursing_notes, ward_fall_rates, knowledge]
+    purposes: [fall_prevention, quality_improvement]
+    rows: {region: [north]}
+    deny_columns: {fall_risk_worklist: [age_band]}
+    mask_columns: {fall_risk_worklist: [encounter_key], nursing_notes: [encounter_key]}
+    max_rows: 200
+  agent:ward-copilot-south:
+    description: Answers nurses on the Vale site about their wards' worklist and notes.
+    products: [fall_risk_worklist, nursing_notes, ward_fall_rates, knowledge]
+    purposes: [fall_prevention, quality_improvement]
+    rows: {region: [south]}
+    deny_columns: {fall_risk_worklist: [age_band]}
+    mask_columns: {fall_risk_worklist: [encounter_key], nursing_notes: [encounter_key]}
+    max_rows: 200
+  agent:patient-safety-analyst:
+    description: Reports fall rates and trends for the patient safety team (aggregates only, no patient rows).
+    products: [ward_fall_rates, ward_daily]
+    purposes: [quality_improvement]
+    max_rows: 500
+  agent:nursing-finance:
+    description: Reports the cost of falls and measures and the value ledger.
+    products: [value_ledger, ward_daily]
+    purposes: [value_reporting]
+    max_rows: 500
+  agent:health-equity:
+    description: Monitors preventive measures and outcomes across synthetic patient groups (aggregates only).
+    products: [fairness_monitor, ward_fall_rates]
+    purposes: [equity_monitoring]
+    max_rows: 200
+knowledge:
+  allowed_purposes: [fall_prevention, quality_improvement]

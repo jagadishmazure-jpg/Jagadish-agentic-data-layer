@@ -1,0 +1,75 @@
+# Semantic layer for the healthcare domain: every fall-prevention KPI is defined once, here, and compiled to SQL by
+# adl.core.semantic. The value case, agents (through the gateway) and the docs all use these definitions.
+# All data is synthetic and PHI-free; gold.ward_daily carries no patient key.
+source: gold.ward_daily
+dimensions:
+  day: day
+  week: "day // 7"
+  region: region
+  ward_id: ward_id
+metrics:
+  bed_days:
+    sql: sum(bed_days)
+    description: Patient-days in hospital.
+    unit: bed-days
+    owner: clinical-data
+  admissions:
+    sql: sum(admissions)
+    description: Patients admitted.
+    unit: patients
+    owner: clinical-data
+  falls:
+    sql: sum(falls)
+    description: Inpatient falls reported to the incident tool.
+    unit: falls
+    owner: patient-safety
+  harm_falls:
+    sql: sum(harm_falls)
+    description: Inpatient falls that caused harm.
+    unit: falls
+    owner: patient-safety
+  falls_per_1000_bed_days:
+    sql: 1000.0 * sum(falls) / nullif(sum(bed_days), 0)
+    description: Falls per 1,000 bed-days, the standard inpatient fall rate.
+    unit: per 1,000 bed-days
+    owner: patient-safety
+  harm_falls_per_1000_bed_days:
+    sql: 1000.0 * sum(harm_falls) / nullif(sum(bed_days), 0)
+    description: Falls with harm per 1,000 bed-days.
+    unit: per 1,000 bed-days
+    owner: patient-safety
+  protected_fall_share_pct:
+    sql: 100.0 * sum(falls_protected) / nullif(sum(falls), 0)
+    description: Share of falls where a preventive measure from the ward was in place that day.
+    unit: percent
+    owner: patient-safety
+  time_to_intervention_days:
+    sql: sum(first_measure_delay_days) / nullif(sum(first_measures), 0)
+    description: Average days from admission to a patient's first preventive measure, for patients who got one.
+    unit: days
+    owner: nursing-operations
+  sitter_shifts:
+    sql: sum(sitter_shifts)
+    description: Sitter (one-to-one observation) shifts used.
+    unit: shifts
+    owner: nursing-operations
+  bed_alarm_days:
+    sql: sum(alarm_days)
+    description: Patient-days with a bed alarm.
+    unit: patient-days
+    owner: nursing-operations
+  rounding_days:
+    sql: sum(rounding_days)
+    description: Patient-days on hourly rounding.
+    unit: patient-days
+    owner: nursing-operations
+  fall_cost_usd:
+    sql: sum(fall_cost_usd)
+    description: Cost of falls at the stated assumptions ($3,500 without harm, $30,000 with harm).
+    unit: USD
+    owner: finance-analytics
+  measure_cost_usd:
+    sql: sum(measure_cost_usd)
+    description: Cost of preventive measures at the stated assumptions (per patient-day; a mobility aid once).
+    unit: USD
+    owner: finance-analytics

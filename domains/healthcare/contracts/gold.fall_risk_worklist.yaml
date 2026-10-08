@@ -39,6 +39,12 @@ schema:
 - name: morse_high_risk
   type: bool
   nullable: false
+- name: morse_gait_impaired
+  type: bool
+  nullable: false
+- name: morse_forgets_limits
+  type: bool
+  nullable: false
 - name: confusion
   type: string
   nullable: false

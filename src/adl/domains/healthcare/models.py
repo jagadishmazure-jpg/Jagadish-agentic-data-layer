@@ -112,6 +112,7 @@ def mornings(store, days: range) -> Mornings:
 @dataclass
 class FallModel:
     model: Logistic
+    harm_share: float  # share of falls in the incident history that caused harm (planning figure for the policy)
 
     def p(self, v: W.View) -> np.ndarray:
         return self.model.predict(features(v))
@@ -122,7 +123,8 @@ class FallModel:
 
 def fit_production(store, data: Mornings | None = None) -> FallModel:
     data = data or mornings(store, range(10, W.DAYS_HISTORY - LABEL_DAYS + 1))
-    return FallModel(Logistic.fit(data.X, data.y))
+    harm = store.sql("SELECT avg(CAST(harm AS DOUBLE)) AS s FROM silver.fall_incidents")[0]["s"]
+    return FallModel(Logistic.fit(data.X, data.y), round(float(harm), 4))
 
 
 def _top_k_per_day(score: np.ndarray, day: np.ndarray, k: int) -> np.ndarray:

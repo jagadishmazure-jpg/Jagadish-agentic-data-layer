@@ -1,0 +1,30 @@
+# Decision policy for the fall-prevention assistant (adl.domains.healthcare.policy). Code reads this file; agents cannot change it.
+# Synthetic, PHI-free scenario. The assistant may only propose these four nursing measures; a nurse approves every one.
+measures: [bed_alarm, hourly_rounding, mobility_aid, sitter]
+capacity:                     # the same capacity the wards have today; the assistant only changes who gets it
+  bed_alarm: 60               # alarm units in use per day, across both sites
+  hourly_rounding: 90         # patients on hourly rounding per day
+  sitter: 12                  # sitter shifts per day
+  mobility_aid: 16            # new mobility aids per day
+planning:                     # cost assumptions, USD, the same ones the value ledger uses (config/healthcare/value-case.yaml)
+  fall_cost_usd: 3500         # a fall without harm
+  harm_fall_cost_usd: 30000   # a fall with harm; the harm share comes from the incident history (silver.fall_incidents)
+  measure_cost_usd: {bed_alarm: 12, hourly_rounding: 28, mobility_aid: 45, sitter: 520}   # per patient-day; a mobility aid once
+  aid_horizon_days: 3         # days of benefit counted for a mobility aid
+  # Share of a patient's fall risk each measure is expected to remove, by the nursing signal seen yesterday.
+  # The ward's planning assumptions, not measured effects (docs/healthcare/fall-risk-model.md).
+  # confusion: confusion documented, restless at night or Morse "forgets limitations"; toileting: 3 or more calls;
+  # gait: unsteady gait observed or Morse gait impaired; none: no signal.
+  effect:
+    bed_alarm:       {confusion: 0.40, toileting: 0.15, gait: 0.10, none: 0.15}
+    hourly_rounding: {confusion: 0.15, toileting: 0.35, gait: 0.15, none: 0.15}
+    mobility_aid:    {confusion: 0.00, toileting: 0.10, gait: 0.40, none: 0.00}
+    sitter:          {confusion: 0.60, toileting: 0.35, gait: 0.30, none: 0.30}
+# Bed alarm units and the rounding rota are already staffed and paid for, so the assistant fills them with the patients
+# who gain the most; sitter shifts are booked per shift and mobility aids are bought, so those need a benefit above their cost.
+fill_capacity: [bed_alarm, hourly_rounding]
+risk_multiplier: 1.0          # scales the model's risk in the benefit sum; chosen on tuning seeds 4000-4009 (docs/healthcare/value-ledger.md)
+approval:
+  approver_role: nurse in charge   # every proposed measure waits for the nurse in charge of the ward; nothing is automatic
+execution:
+  mode: dry-run               # the live executor (nursing task list) is not implemented

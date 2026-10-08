@@ -26,6 +26,7 @@ adl mortgage STEP [--out F] the mortgage domain: run, quality, lineage, metrics,
                             access, agents, injection, value, focus, gate
 adl insurance STEP [--out F] the insurance domain: run, quality, lineage, metrics, value-case, models, retrieval,
                             access, agents, injection, value, fairness, focus, gate
+adl healthcare STEP [--out F] the healthcare domain (synthetic, PHI-free): the same steps as insurance
 adl gate                    release gate for every built domain (exit 1 on any failure)
 """
 
@@ -657,7 +658,14 @@ def cmd_insurance(a) -> int:
     return report.main(a.step, a.out)
 
 
+def cmd_healthcare(a) -> int:
+    from adl.domains.healthcare import report
+
+    return report.main(a.step, a.out)
+
+
 def all_gate_checks() -> list[tuple[str, bool, str]]:
+    from adl.domains.healthcare import report as hc
     from adl.domains.insurance import report as ins
     from adl.domains.mortgage import report as mtg
 
@@ -665,6 +673,7 @@ def all_gate_checks() -> list[tuple[str, bool, str]]:
         [(f"retail: {n}", ok, d) for n, ok, d in gate_checks()]
         + [(f"mortgage: {n}", ok, d) for n, ok, d in mtg.gate_checks()]
         + [(f"insurance: {n}", ok, d) for n, ok, d in ins.gate_checks()]
+        + [(f"healthcare: {n}", ok, d) for n, ok, d in hc.gate_checks()]
     )
 
 
@@ -724,6 +733,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("step", choices=INSURANCE_STEPS)
     p.add_argument("--out", help="for focus: write the FOCUS CSV here")
     p.set_defaults(fn=cmd_insurance)
+    p = sub.add_parser("healthcare")
+    from adl.domains.healthcare.report import STEPS as HEALTHCARE_STEPS
+
+    p.add_argument("step", choices=HEALTHCARE_STEPS)
+    p.add_argument("--out", help="for focus: write the FOCUS CSV here")
+    p.set_defaults(fn=cmd_healthcare)
     p = sub.add_parser("mcp")
     p.add_argument("--identity", default="agent:store-copilot-north")
     p.set_defaults(fn=cmd_mcp)
