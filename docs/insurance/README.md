@@ -54,13 +54,12 @@ paired replications of 28 days, 95% bootstrap intervals, simulated.
 | Conditional fairness measures and settlement-amount outcomes | Planned |
 | Cloud deployment | Written, not run (shared IaC; nothing is deployed) |
 
-## Business model mapping (MIT CISR)
+## Business model mapping
 
-MIT CISR's four business models are described in the
-[MIT Sloan article](https://mitsloan.mit.edu/ideas-made-to-matter/what-leaders-still-get-wrong-about-ai)
-by Beth Stackpole; the descriptions below are my paraphrase and the mapping is my own.
+Four business models for the AI era, from adding AI to today's model to orchestrating an ecosystem,
+mapped to this domain.
 
-| Model (paraphrased) | Ferrowind Insurance example | What the data layer provides | Status |
+| Model | Ferrowind Insurance example | What the data layer provides | Status |
 |---|---|---|---|
 | Existing+: AI improves today's model | Adjusters, the review team and the subrogation unit spend the same capacity on the claims where it pays most | Claims data products, models, assistant with approval, value ledger, fairness monitor | Built |
 | Customer Proxy: AI runs a set process for the customer | A policyholder-side assistant that files a claim, uploads photos and tracks it within limits the customer sets | The same products per claim; a customer-consented purpose would be added to the contracts | Planned (design only) |

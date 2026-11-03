@@ -4,7 +4,7 @@
 
 ## Context
 
-The article's third mistake is staying in pilots, often because each pilot is tied to one platform.
+A common way AI projects fail is staying in pilots, often because each pilot is tied to one platform.
 Adopters run on Azure, Google Cloud or AWS. A portfolio must not claim deployments it has not made.
 
 ## Decision

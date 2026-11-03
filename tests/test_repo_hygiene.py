@@ -41,7 +41,6 @@ ALLOWED_GUIDS = {
     "test_adapters.py": {"2ff814a6-3304-4ab8-85cb-cd0e6f879c1d"},
 }
 ALLOWED_GUIDS["test_iac.py"] = ALLOWED_GUIDS["identity.bicep"]
-ARTICLE = "https://mitsloan.mit.edu/ideas-made-to-matter/what-leaders-still-get-wrong-about-ai"
 ORGS = ("Wrenfield Grocers", "Quillmere Home Loans", "Ferrowind Insurance", "Halsey Vale Health")
 
 
@@ -99,7 +98,7 @@ def test_full_doc_set_exists():
     assert len([n for n in names if n.startswith("insurance/")]) >= 5
     assert len([n for n in names if n.startswith("healthcare/")]) >= 5
     for top in (
-        "architecture", "roadmap", "value-case", "mit-article-mapping", "ai-business-models", "operating-model",
+        "architecture", "roadmap", "value-case", "value-principles", "ai-business-models", "operating-model",
         "data-governance", "purview-mapping", "threat-model", "observability", "failure-modes", "cloud-mapping",
         "metrics", "implementation-guide", "adding-a-domain", "interview-guide", "glossary", "deployment",
     ):  # fmt: skip
@@ -162,14 +161,6 @@ def test_reference_material_is_never_committed():
     tracked = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True).stdout.split()
     assert not [f for f in tracked if f.lower().endswith((".pdf", ".html"))]
     assert "*.pdf" in (ROOT / ".gitignore").read_text() and "refs/" in (ROOT / ".gitignore").read_text()
-
-
-def test_article_is_credited_by_link_and_paraphrased():
-    readme = flat(ROOT / "README.md")
-    mapping = flat(ROOT / "docs/mit-article-mapping.md")
-    for t in (readme, mapping):
-        assert ARTICLE in t and "MIT CISR" in t and "Beth Stackpole" in t
-    assert "paraphrase" in mapping and "not quoted" in mapping
 
 
 def test_organisations_are_fictional():

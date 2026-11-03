@@ -1,5 +1,5 @@
 # Phase 0: the value case, written before any model. The business problem, the KPIs with their baseline
-# source and target, and the value tree that links data to money (MIT CISR's five steps). `adl value-case`
+# source and target, and the value tree that links data to money (five steps). `adl value-case`
 # measures the baseline from gold.sales_daily through the metrics layer; `adl value` reports the simulated
 # result against these targets, including any target that is missed.
 use_case: retail-stockout-markdown

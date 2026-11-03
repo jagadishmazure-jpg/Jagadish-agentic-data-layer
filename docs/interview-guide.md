@@ -5,7 +5,7 @@ comes from [metrics.md](metrics.md).
 
 ## Two-minute version
 
-"I took an MIT Sloan article on why AI projects fail to create value and built the opposite for one
+"I took the common reasons AI projects fail to create value and built the opposite for one
 decision: what a grocer should order and mark down each night. It starts with a value case and
 measured baselines, then data contracts and a bronze/silver/gold lakehouse, then models that are
 backtested against what store teams do today. Agents only reach data through a gateway that checks

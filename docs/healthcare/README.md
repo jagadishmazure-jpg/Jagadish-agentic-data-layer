@@ -63,15 +63,13 @@ synthetic data.
 | Clinical validation, calibration on real data, regulatory review | Planned; out of scope for a synthetic portfolio |
 | Cloud deployment | Written, not run (shared IaC; nothing is deployed) |
 
-## Business model mapping (MIT CISR)
+## Business model mapping
 
-MIT CISR's four business models are described in the
-[MIT Sloan article](https://mitsloan.mit.edu/ideas-made-to-matter/what-leaders-still-get-wrong-about-ai)
-by Beth Stackpole; the descriptions below are my paraphrase and the mapping is my own. The article
-itself uses predicting which hospital patients are likely to fall to illustrate the path from data to
-money, which is why this use case was chosen.
+Four business models for the AI era, from adding AI to today's model to orchestrating an ecosystem,
+mapped to this domain. Predicting which hospital patients are likely to fall is a clear path
+from data to money, which is why this use case was chosen.
 
-| Model (paraphrased) | Halsey Vale Health example | What the data layer provides | Status |
+| Model | Halsey Vale Health example | What the data layer provides | Status |
 |---|---|---|---|
 | Existing+: AI improves today's model | The same alarm units, rounding rota, sitters and mobility aids go to the patients who gain the most, approved by the nurse in charge | Ward data products, the fall-risk model, the assistant with approval, value ledger, fairness monitor | Built |
 | Customer Proxy: AI runs a set process for the customer | A patient- or family-side assistant that requests help to the toilet or a call-bell check within limits the patient sets | The same worklist per patient; a patient-consented purpose would be added to the contracts | Planned (design only) |

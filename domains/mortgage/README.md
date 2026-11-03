@@ -56,9 +56,9 @@ flowchart LR
 The rendered outputs and their explanation are in the component docs; the numbers above are checked
 against those outputs by hand, the component docs are checked by CI.
 
-## Business model (MIT CISR, paraphrased)
+## Business model
 
 Mortgage starts at **Existing+**: AI improves the lender's current pipeline process. The step to
 **Customer Proxy** would be a borrower-side assistant that keeps a file moving (documents, lock
 decisions) within limits the borrower sets; that needs a borrower-consented purpose in the contracts
-and is planned, design only. See [docs/mortgage/README.md](../../docs/mortgage/README.md#business-model-mapping-mit-cisr).
+and is planned, design only. See [docs/mortgage/README.md](../../docs/mortgage/README.md#business-model-mapping).

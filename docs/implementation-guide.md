@@ -12,7 +12,7 @@ flowchart LR
 
 Copy `config/value-case.yaml`. Name the decision, the sponsor, the decision owners, three to five KPIs
 with a direction and a target change, and the value tree. If you cannot fill the `monetise` line,
-stop: the article's second mistake is starting without a path to value.
+stop: starting without a path to value is a common reason AI projects fail.
 
 ## 2. Write contracts for what you need, not for everything
 

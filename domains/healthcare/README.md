@@ -23,8 +23,8 @@ fairness check across synthetic patient groups. The full write-up is in
 Which preventive nursing measures each in-hospital patient gets each morning: bed alarm, hourly
 rounding, mobility aid or sitter request, every one approved by the nurse in charge of the ward.
 Capacity stays the same as today; the assistant only changes who gets it. It never proposes anything
-clinical (medication, diagnosis, test, treatment or discharge). This is the example the MIT Sloan
-article uses to illustrate the five steps from data to money.
+clinical (medication, diagnosis, test, treatment or discharge). It shows all five steps from data to
+money in one use case.
 
 | KPI | Direction | Target (set before results) | Result (simulated, 28 days) |
 |---|---|---|---|

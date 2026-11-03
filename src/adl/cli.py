@@ -206,7 +206,7 @@ def cmd_value_case(a) -> int:
     ]
     print(f"\nbaseline per {case['measurement_window_days']} days, measured from gold.sales_daily (history under the current rules):")
     print(_table(rows, ["kpi", "baseline", "target change", "target", "why"]))
-    print("\nvalue tree (MIT CISR five steps):")
+    print("\nvalue tree (five steps):")
     for step, items in case["value_tree"].items():
         print(f"  {step}: {', '.join(items)}")
     return 0

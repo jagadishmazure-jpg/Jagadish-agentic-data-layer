@@ -37,13 +37,12 @@ flowchart LR
 | Fair-lending outcome testing | Planned |
 | Cloud deployment | Written, not run (shared IaC; nothing is deployed) |
 
-## Business model mapping (MIT CISR)
+## Business model mapping
 
-MIT CISR's four business models are described in the
-[MIT Sloan article](https://mitsloan.mit.edu/ideas-made-to-matter/what-leaders-still-get-wrong-about-ai)
-by Beth Stackpole; the descriptions below are my paraphrase and the mapping is my own.
+Four business models for the AI era, from adding AI to today's model to orchestrating an ecosystem,
+mapped to this domain.
 
-| Model (paraphrased) | Quillmere Home Loans example | What the data layer provides | Status |
+| Model | Quillmere Home Loans example | What the data layer provides | Status |
 |---|---|---|---|
 | Existing+: AI improves today's model | Loan officers and processors spend the same capacity on the locks most likely to fall out | Pipeline data products, fallout risk, assistant with approval, value ledger | Built |
 | Customer Proxy: AI runs a set process for the customer | A borrower-side assistant that keeps a file moving (documents, lock decisions) within limits the borrower sets | The same products per borrower; a borrower-consented purpose would be added to the contracts | Planned (design only) |

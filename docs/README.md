@@ -5,7 +5,7 @@
 | `architecture.md` | Layers, request and action paths, design choices, shared vs domain code |
 | `roadmap.md` | Phases 0 to 6, built vs planned, the domains built and planned |
 | `value-case.md` | Phase 0: the problem, KPI baselines and targets, the result, value attribution |
-| `mit-article-mapping.md` | How each idea in the MIT Sloan article maps to code (paraphrased, credited by link) |
+| `value-principles.md` | How each value principle maps to code |
 | `ai-business-models.md` | The four AI-era business models and what the data layer provides for each |
 | `operating-model.md` | Roles, RACI, change path and review cadence |
 | `data-governance.md` | Contracts, classification, personal data, acceptable use, row and column security |
@@ -34,4 +34,4 @@
 | Recruiter | [../README.md](../README.md) → [interview-guide.md](interview-guide.md) → [metrics.md](metrics.md) |
 | Adopter | [implementation-guide.md](implementation-guide.md) → [architecture.md](architecture.md) → [components/README.md](components/README.md) → [adding-a-domain.md](adding-a-domain.md) |
 | Security reviewer | [threat-model.md](threat-model.md) → [data-governance.md](data-governance.md) → [components/data-gateway.md](components/data-gateway.md) → [infra/workflows.md](infra/workflows.md) |
-| Business reader | [value-case.md](value-case.md) → [mit-article-mapping.md](mit-article-mapping.md) → [ai-business-models.md](ai-business-models.md) → [operating-model.md](operating-model.md) |
+| Business reader | [value-case.md](value-case.md) → [value-principles.md](value-principles.md) → [ai-business-models.md](ai-business-models.md) → [operating-model.md](operating-model.md) |

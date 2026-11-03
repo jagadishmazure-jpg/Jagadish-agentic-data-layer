@@ -1,9 +1,7 @@
 # AI business models
 
-MIT CISR's research, as summarised in the
-[MIT Sloan article](https://mitsloan.mit.edu/ideas-made-to-matter/what-leaders-still-get-wrong-about-ai),
-describes four business models for the AI era, from adding AI to today's model to orchestrating an
-ecosystem. The descriptions below are my paraphrase; the mapping to this repository is my own.
+There are four business models for the AI era, from adding AI to today's model to orchestrating an
+ecosystem. This page maps each one to this repository.
 
 ```mermaid
 flowchart LR
@@ -12,7 +10,7 @@ flowchart LR
   M --> O[Orchestrator: AI assembles an ecosystem of partners' products]
 ```
 
-| Model (paraphrased) | Wrenfield Grocers example | What the data layer provides | Status |
+| Model | Wrenfield Grocers example | What the data layer provides | Status |
 |---|---|---|---|
 | Existing+: augment the current model with AI | Better orders and markdowns inside today's stores | Data products, forecast, risk, agents with approval, value ledger | Built |
 | Customer Proxy: AI achieves an outcome for a customer through a set process | A "never run out" basket that re-orders a household's staples within limits the customer sets | The same forecast and stockout risk per customer segment; acceptable-use purposes would need a customer-consented purpose added to contracts | Planned (design only) |
@@ -36,11 +34,11 @@ acceptable use lives in the contract and not in each agent.
 
 The mortgage domain (Quillmere Home Loans) also starts at Existing+: the same calls, chases and
 extensions, spent on the locks most likely to fall out. Its Customer Proxy, Modular Creator and
-Orchestrator steps are mapped in [mortgage/README.md](mortgage/README.md#business-model-mapping-mit-cisr).
+Orchestrator steps are mapped in [mortgage/README.md](mortgage/README.md#business-model-mapping).
 
 ## Why retail starts at Existing+
 
-The article's point is that the business model matters, not that every firm should jump to the last
+The point is that the business model matters, not that every firm should jump to the last
 model. Existing+ is where the measured value is today, and it builds the assets (governed data
 products, an agent-safe gateway, a value ledger) the other three models need.
 
@@ -49,7 +47,7 @@ products, an agent-safe gateway, a value ledger) the other three models need.
 The insurance domain (Ferrowind Insurance) starts at Existing+ too: the same adjusters, review team
 and subrogation unit, spent on the claims where they pay most, with a fairness monitor alongside. Its
 Customer Proxy, Modular Creator and Orchestrator steps are mapped in
-[insurance/README.md](insurance/README.md#business-model-mapping-mit-cisr).
+[insurance/README.md](insurance/README.md#business-model-mapping).
 
 ## Healthcare
 
@@ -57,4 +55,4 @@ The healthcare domain (Halsey Vale Health, fully synthetic and PHI-free) starts 
 the same alarm units, rounding rota, sitters and mobility aids, given to the patients who gain most and
 approved by the nurse in charge, with a fairness monitor alongside. Its Customer Proxy, Modular Creator
 and Orchestrator steps are mapped in
-[healthcare/README.md](healthcare/README.md#business-model-mapping-mit-cisr).
+[healthcare/README.md](healthcare/README.md#business-model-mapping).

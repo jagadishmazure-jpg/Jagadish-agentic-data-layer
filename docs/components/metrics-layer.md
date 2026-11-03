@@ -130,7 +130,7 @@ markdown_usd       14,276.48   -15%           12,135.01   margin kept on near-da
 waste_cost_usd     9,665.49    -20%           7,732.39    less stock thrown away
 gross_margin_usd   114,646.79  +3%            118,086.19  the bottom line the levers add up to
 
-value tree (MIT CISR five steps):
+value tree (five steps):
   collect: POS sales, stock and waste, purchase orders and receipts, promotions, prices and price tests, weather, local events, loyalty segments, store notes
   insights: demand forecast, stockout risk, price elasticity, markdown response, supplier lead-time reliability
   actions: purchase orders, inter-store transfers, markdowns

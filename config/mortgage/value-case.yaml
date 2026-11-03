@@ -1,5 +1,5 @@
 # Phase 0 for the mortgage domain: the value case, written before any model. The business problem, the
-# KPIs with their baseline source and target, and the value tree (MIT CISR's five steps). `adl mortgage
+# KPIs with their baseline source and target, and the value tree (five steps). `adl mortgage
 # value-case` measures the baseline from gold.pipeline_daily through the metrics layer; `adl mortgage value`
 # reports the simulated result against these targets, including any target that is missed.
 use_case: mortgage-lock-fallout

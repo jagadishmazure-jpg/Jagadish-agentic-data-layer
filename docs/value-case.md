@@ -1,6 +1,6 @@
 # Value case (Phase 0)
 
-Written before any model, as the article recommends: name the result, the people who own the decision,
+Written before any model: name the result, the people who own the decision,
 the KPIs with a measured baseline and a target, and the path from data to money. The file is
 `config/value-case.yaml`; `adl value-case` measures the baselines from gold through the metrics layer
 and `adl value` reports the result against the same targets, including the ones that are missed.
@@ -28,7 +28,7 @@ markdown_usd       14,276.48   -15%           12,135.01   margin kept on near-da
 waste_cost_usd     9,665.49    -20%           7,732.39    less stock thrown away
 gross_margin_usd   114,646.79  +3%            118,086.19  the bottom line the levers add up to
 
-value tree (MIT CISR five steps):
+value tree (five steps):
   collect: POS sales, stock and waste, purchase orders and receipts, promotions, prices and price tests, weather, local events, loyalty segments, store notes
   insights: demand forecast, stockout risk, price elasticity, markdown response, supplier lead-time reliability
   actions: purchase orders, inter-store transfers, markdowns

@@ -10,12 +10,10 @@ is mortgage, for **Quillmere Home Loans**, a fictional six-branch lender; the th
 **Halsey Vale Health**, a fictional two-site hospital, on fully synthetic, PHI-free data. All four are
 built on the same platform and all four are complete.
 
-The structure follows the MIT Sloan article
-[What leaders still get wrong about AI](https://mitsloan.mit.edu/ideas-made-to-matter/what-leaders-still-get-wrong-about-ai)
-by Beth Stackpole, which summarises MIT CISR research: start from a result, not from AI; follow a
+The structure rests on a few principles: start from a result, not from AI; follow a
 path from data to insight to action to value to money; build platforms and data that let pilots scale;
-and do not confuse productivity with value. The article is credited by link and paraphrased only;
-[docs/mit-article-mapping.md](docs/mit-article-mapping.md) shows where each idea lives in the code.
+and do not confuse productivity with value.
+[docs/value-principles.md](docs/value-principles.md) shows where each idea lives in the code.
 
 Everything runs offline on synthetic data with one command per step. **Nothing is deployed**: the
 Terraform (Azure, Google Cloud, AWS) and Bicep are validated and tested in CI, and the deploy workflow
@@ -59,7 +57,7 @@ is gated off.
 * **Safety:** in each domain 14 of 14 access attacks stopped, 0 personal-data rows in anything an agent can read, a
   hash-chained audit log that detects tampering, and no injected instruction ever executed in any of
   4 defence configurations.
-* **Quality:** **666 automated tests**, a 51-check release gate (15 retail, 11 mortgage, 12 insurance, 13 healthcare), ruff, CodeQL, gitleaks, an SBOM,
+* **Quality:** **665 automated tests**, a 51-check release gate (15 retail, 11 mortgage, 12 insurance, 13 healthcare), ruff, CodeQL, gitleaks, an SBOM,
   checkov, tflint and Terraform tests on every push.
 * **Stack:** Python 3.13, DuckDB, Delta Lake, Microsoft Agent Framework, MCP, A2A, Terraform, Bicep,
   GitHub Actions with OIDC.
@@ -115,7 +113,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 
 ## The five steps from data to money
 
-| Step (MIT CISR) | In this repository | Real number |
+| Step | In this repository | Real number |
 |---|---|---|
 | Collect the right data | 14 source feeds landed as bronze, conformed to 15 silver tables under contract | 176,844 bronze rows; 48 duplicates removed; 19 rows quarantined |
 | Generate insights | Demand forecast, stockout risk, price elasticity, markdown response, hybrid retrieval | forecast WAPE 31.9% vs 35.8% for the best baseline; stockout AUC 0.791 |
@@ -214,7 +212,7 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 
 ## Mortgage in five steps
 
-| Step (MIT CISR) | In this repository | Real number |
+| Step | In this repository | Real number |
 |---|---|---|
 | Collect the right data | 10 source feeds landed as bronze, conformed to 10 silver tables under contract | 51,006 bronze rows; 85 resent stage events removed; 20 rows quarantined |
 | Generate insights | 14-day fallout risk from process signals only; hybrid retrieval | AUC 0.730 vs 0.462 for the expiry rule; 51.6% vs 6.9% of value at risk covered |
@@ -224,7 +222,7 @@ changes. All numbers: [docs/metrics.md](docs/metrics.md).
 
 ## Insurance in five steps
 
-| Step (MIT CISR) | In this repository | Real number |
+| Step | In this repository | Real number |
 |---|---|---|
 | Collect the right data | 12 source feeds landed as bronze, conformed to 11 silver tables under contract | 77,711 bronze rows; 30 intake retries removed; 16 rows quarantined |
 | Generate insights | Complexity at first notice; leakage and subrogation learned from random audits; hybrid retrieval | subrogation AUC 0.962 vs 0.708 for the intake flag; leakage AUC 0.762 vs 0.527 for largest-first |
@@ -248,7 +246,7 @@ Every number below is from a real run of the CLI on synthetic data (30 paired re
 
 > Fully synthetic, PHI-free data; the fall-risk model is not a medical device.
 
-| Step (MIT CISR) | In this repository | Real number |
+| Step | In this repository | Real number |
 |---|---|---|
 | Collect the right data | 9 source feeds landed as bronze, conformed to 9 silver tables under contract; identity split into a restricted table | 131,832 bronze rows; 30 admission resends and 40 resent observations removed; 22 rows quarantined |
 | Generate insights | Three-day fall risk from what the ward records each morning; hybrid retrieval | AUC 0.650 vs 0.506 for the Morse total; 56.2% vs 32.4% of falls caught at 90 patients a morning |
@@ -299,7 +297,7 @@ Every number below is from a real run of the CLI on synthetic data (30 paired re
 | Recruiters and hiring managers | This page, then [docs/interview-guide.md](docs/interview-guide.md) |
 | Engineers adopting the pattern | [docs/implementation-guide.md](docs/implementation-guide.md) and [docs/adding-a-domain.md](docs/adding-a-domain.md) |
 | Architects and security reviewers | [docs/architecture.md](docs/architecture.md), [docs/threat-model.md](docs/threat-model.md), [docs/data-governance.md](docs/data-governance.md) |
-| Business and value | [docs/value-case.md](docs/value-case.md), [docs/mit-article-mapping.md](docs/mit-article-mapping.md), [docs/ai-business-models.md](docs/ai-business-models.md), [docs/operating-model.md](docs/operating-model.md) |
+| Business and value | [docs/value-case.md](docs/value-case.md), [docs/value-principles.md](docs/value-principles.md), [docs/ai-business-models.md](docs/ai-business-models.md), [docs/operating-model.md](docs/operating-model.md) |
 | Every component in depth | [docs/components/README.md](docs/components/README.md) and [docs/infra/README.md](docs/infra/README.md) |
 | The mortgage domain | [docs/mortgage/README.md](docs/mortgage/README.md) |
 | The insurance domain | [docs/insurance/README.md](docs/insurance/README.md) |
