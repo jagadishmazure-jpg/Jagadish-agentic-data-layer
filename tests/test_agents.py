@@ -165,4 +165,4 @@ def test_injection_matrix():
 
 def test_default_client_is_the_offline_mock(monkeypatch):
     monkeypatch.delenv("ADL_LLM", raising=False)
-    assert isinstance(get_chat_client(lambda: A.MockBriefClient()), A.MockBriefClient)
+    assert isinstance(get_chat_client(A.MockBriefClient), A.MockBriefClient)

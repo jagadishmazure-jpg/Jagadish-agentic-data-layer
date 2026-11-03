@@ -232,7 +232,7 @@ class DataGateway:
             sql = f"SELECT {', '.join(chr(34) + x + chr(34) for x in cols)} FROM {self.store.qualified('gold', product)}"
             if where:
                 sql += " WHERE " + " AND ".join(where)
-            sql += " ORDER BY " + ", ".join(f'"{k}"' for k in c.primary_key) + f" LIMIT {cap if limit > cap else limit}"
+            sql += " ORDER BY " + ", ".join(f'"{k}"' for k in c.primary_key) + f" LIMIT {limit}"
             rows = self.store.sql(sql, params)
             masked = [x for x in ident.mask_columns.get(product, ()) if x in cols]
             for r in rows:

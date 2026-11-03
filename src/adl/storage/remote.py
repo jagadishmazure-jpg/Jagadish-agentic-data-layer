@@ -20,7 +20,8 @@ from adl.storage.base import AuthSpec, WriteResult, check_layer, check_name
 
 
 class TokenProvider(Protocol):
-    def token(self, scope: str) -> str: ...
+    def token(self, scope: str) -> str:
+        """Return a bearer token for the given scope."""
 
 
 @dataclass

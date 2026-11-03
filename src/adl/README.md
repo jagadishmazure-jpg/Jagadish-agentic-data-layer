@@ -6,6 +6,7 @@ The `adl` package. `core/`, `knowledge/`, `serve/` and `storage/` are domain-neu
 |---|---|
 | `__init__.py` | Package root and repository path |
 | `cli.py` | The `adl` command line: every step, report and the release gate |
+| `fmt.py` | Table and dollar formatting shared by the CLI and the domain reports |
 | `iac.py` | Static summary of Terraform, Bicep and workflows for `adl iac` |
 | `core/` | Contracts, quality, lineage, metrics layer, guardrails, gateway, audit, domain registry, model client |
 | `domains/` | Business domains: retail, mortgage, insurance and healthcare, all four built |

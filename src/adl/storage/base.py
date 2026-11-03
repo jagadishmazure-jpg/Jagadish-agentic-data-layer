@@ -43,19 +43,26 @@ class TableStore(Protocol):
     name: str
     table_format: str
 
-    def uri(self, layer: str, table: str) -> str: ...
+    def uri(self, layer: str, table: str) -> str:
+        """Return the storage URI of a table."""
 
-    def write(self, layer: str, table: str, data: pa.Table, mode: str = "overwrite") -> WriteResult: ...
+    def write(self, layer: str, table: str, data: pa.Table, mode: str = "overwrite") -> WriteResult:
+        """Write a table and return what was written."""
 
-    def read(self, layer: str, table: str) -> pa.Table: ...
+    def read(self, layer: str, table: str) -> pa.Table:
+        """Read a table."""
 
-    def tables(self, layer: str) -> list[str]: ...
+    def tables(self, layer: str) -> list[str]:
+        """List the tables in a layer."""
 
-    def sql(self, query: str, params: list[Any] | None = None) -> list[dict[str, Any]]: ...
+    def sql(self, query: str, params: list[Any] | None = None) -> list[dict[str, Any]]:
+        """Run a parameterised SQL query and return rows."""
 
-    def qualified(self, layer: str, table: str) -> str: ...
+    def qualified(self, layer: str, table: str) -> str:
+        """Return the engine-qualified table name."""
 
-    def auth(self) -> AuthSpec: ...
+    def auth(self) -> AuthSpec:
+        """Describe how this store authenticates."""
 
 
 def check_layer(layer: str) -> None:

@@ -39,28 +39,16 @@ import logging
 import sys
 from pathlib import Path
 
+from adl.fmt import ci as _ci
+from adl.fmt import table as _table
+from adl.fmt import usd as _usd
+
 
 def _quiet() -> None:
     logging.basicConfig(level=logging.WARNING)
     for name in ("agent_framework", "httpx"):
         logging.getLogger(name).setLevel(logging.ERROR)
     logging.getLogger("mcp").setLevel(logging.CRITICAL)  # expected denials are logged at ERROR; the client sees is_error
-
-
-def _table(rows: list[list], header: list[str]) -> str:
-    rows = [[str(c) for c in r] for r in rows]
-    w = [max(len(h), *(len(r[i]) for r in rows)) if rows else len(h) for i, h in enumerate(header)]
-    out = ["  ".join(h.ljust(w[i]) for i, h in enumerate(header)).rstrip(), "  ".join("-" * x for x in w)]
-    out += ["  ".join(c.ljust(w[i]) for i, c in enumerate(r)).rstrip() for r in rows]
-    return "\n".join(out)
-
-
-def _usd(x: float) -> str:
-    return f"-${-x:,.0f}" if x < 0 else f"${x:,.0f}"
-
-
-def _ci(lo: float, hi: float) -> str:
-    return f"[{_usd(lo)}, {_usd(hi)}]"
 
 
 def _lake():

@@ -9,7 +9,7 @@ security filter on regions. Authentication is a Microsoft Entra token for the ma
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from adl.knowledge.embed import DIM
@@ -20,11 +20,13 @@ SCOPE = "https://search.azure.com/.default"
 
 
 class Transport(Protocol):
-    def __call__(self, method: str, url: str, body: dict[str, Any] | None, headers: dict[str, str]) -> dict[str, Any]: ...
+    def __call__(self, method: str, url: str, body: dict[str, Any] | None, headers: dict[str, str]) -> dict[str, Any]:
+        """Send one HTTP request and return the decoded JSON body."""
 
 
 class TokenProvider(Protocol):
-    def __call__(self, scope: str) -> str: ...
+    def __call__(self, scope: str) -> str:
+        """Return a bearer token for the given scope."""
 
 
 def managed_identity_token(scope: str) -> str:  # pragma: no cover - needs Azure
@@ -38,7 +40,7 @@ class AzureSearchKnowledge:
     endpoint: str
     index: str
     transport: Transport
-    token: TokenProvider = managed_identity_token
+    token: TokenProvider = field(default_factory=lambda: managed_identity_token)
 
     def __post_init__(self) -> None:
         if not self.endpoint.startswith("https://"):

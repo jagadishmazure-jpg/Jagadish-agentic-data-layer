@@ -12,7 +12,9 @@ STEPS = ("run", "quality", "lineage", "metrics", "value-case", "risk", "retrieva
 
 
 def _fmt():
-    from adl.cli import _ci, _table, _usd
+    from adl.fmt import ci as _ci
+    from adl.fmt import table as _table
+    from adl.fmt import usd as _usd
 
     return _table, _usd, _ci
 
